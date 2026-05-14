@@ -1,0 +1,295 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15
+					]
+				},
+				{
+					"build" : "tests",
+					"jsonFile" : "directory-tests-Debug-70e4927a02b591d5c1f8.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "tests",
+					"targetIndexes" : 
+					[
+						16,
+						17,
+						18,
+						19,
+						20,
+						21,
+						22,
+						23,
+						24
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1
+					],
+					"name" : "WeatherApp",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17,
+						18,
+						19,
+						20,
+						21,
+						22,
+						23,
+						24
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "WeatherApp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-WeatherApp-Debug-40069f594e030eb3e9e6.json",
+					"name" : "WeatherApp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "WeatherApp_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-WeatherApp_autogen-Debug-39cfb11655144bf5e347.json",
+					"name" : "WeatherApp_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "WeatherApp_autogen_timestamp_deps::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-WeatherApp_autogen_timestamp_deps-Debug-7d9df5832b101bbd0fb7.json",
+					"name" : "WeatherApp_autogen_timestamp_deps",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "WeatherApp_copy_qml::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-WeatherApp_copy_qml-Debug-417061a8f450b40d3fd7.json",
+					"name" : "WeatherApp_copy_qml",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "WeatherApp_copy_res::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-WeatherApp_copy_res-Debug-0f40cc64d19ba33fb99b.json",
+					"name" : "WeatherApp_copy_res",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "WeatherApp_other_files::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-WeatherApp_other_files-Debug-22edf87693fc59bbca34.json",
+					"name" : "WeatherApp_other_files",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "WeatherApp_qmllint::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-WeatherApp_qmllint-Debug-40bd4bd150d6679a55d7.json",
+					"name" : "WeatherApp_qmllint",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "WeatherApp_qmllint_json::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-WeatherApp_qmllint_json-Debug-51f7267cdd8627733eec.json",
+					"name" : "WeatherApp_qmllint_json",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "WeatherApp_qmllint_module::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-WeatherApp_qmllint_module-Debug-afa0c5f4cf36d3ffd498.json",
+					"name" : "WeatherApp_qmllint_module",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "WeatherApp_qmltyperegistration::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-WeatherApp_qmltyperegistration-Debug-2f5b238e1ff5bf29836f.json",
+					"name" : "WeatherApp_qmltyperegistration",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "all_aotstats::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-all_aotstats-Debug-d5e7aba9a042a08e432f.json",
+					"name" : "all_aotstats",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "all_qmllint::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-all_qmllint-Debug-20ee844e47e93138567b.json",
+					"name" : "all_qmllint",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "all_qmllint_json::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-all_qmllint_json-Debug-3983daa421513ee87af1.json",
+					"name" : "all_qmllint_json",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "all_qmllint_module::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-all_qmllint_module-Debug-6f348fcdb97e904cd7c4.json",
+					"name" : "all_qmllint_module",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "all_qmltyperegistrations::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-all_qmltyperegistrations-Debug-9a7e164661a71b0218fa.json",
+					"name" : "all_qmltyperegistrations",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "module_WeatherApp_aotstats_target::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-module_WeatherApp_aotstats_target-Debug-9c1b43beff98aa5d4a43.json",
+					"name" : "module_WeatherApp_aotstats_target",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "tst_AlertCondition::@a44f0ac069e85531cdee",
+					"jsonFile" : "target-tst_AlertCondition-Debug-203255d0d30104119f81.json",
+					"name" : "tst_AlertCondition",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "tst_AlertCondition_autogen::@a44f0ac069e85531cdee",
+					"jsonFile" : "target-tst_AlertCondition_autogen-Debug-d7c3da4fc69ccaa7a64d.json",
+					"name" : "tst_AlertCondition_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "tst_AlertCondition_autogen_timestamp_deps::@a44f0ac069e85531cdee",
+					"jsonFile" : "target-tst_AlertCondition_autogen_timestamp_deps-Debug-9730cd1c8fbfe7259fd4.json",
+					"name" : "tst_AlertCondition_autogen_timestamp_deps",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "tst_HourlyMerge::@a44f0ac069e85531cdee",
+					"jsonFile" : "target-tst_HourlyMerge-Debug-24f8a053ad43d74d5b66.json",
+					"name" : "tst_HourlyMerge",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "tst_HourlyMerge_autogen::@a44f0ac069e85531cdee",
+					"jsonFile" : "target-tst_HourlyMerge_autogen-Debug-9fb2271b7e2c44bd42f2.json",
+					"name" : "tst_HourlyMerge_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "tst_HourlyMerge_autogen_timestamp_deps::@a44f0ac069e85531cdee",
+					"jsonFile" : "target-tst_HourlyMerge_autogen_timestamp_deps-Debug-fb52e0d852897ff8797f.json",
+					"name" : "tst_HourlyMerge_autogen_timestamp_deps",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "tst_HttpService::@a44f0ac069e85531cdee",
+					"jsonFile" : "target-tst_HttpService-Debug-76d1db2c8c4478da5654.json",
+					"name" : "tst_HttpService",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "tst_HttpService_autogen::@a44f0ac069e85531cdee",
+					"jsonFile" : "target-tst_HttpService_autogen-Debug-3a5916c0bd3d3277e491.json",
+					"name" : "tst_HttpService_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "tst_HttpService_autogen_timestamp_deps::@a44f0ac069e85531cdee",
+					"jsonFile" : "target-tst_HttpService_autogen_timestamp_deps-Debug-7a8754918546b3675729.json",
+					"name" : "tst_HttpService_autogen_timestamp_deps",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "E:/WeatherApp/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug",
+		"source" : "E:/WeatherApp"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 7
+	}
+}

@@ -1,0 +1,14 @@
+module WeatherApp
+typeinfo WeatherApp.qmltypes
+prefer :/WeatherApp/
+MainWindow 1.0 qml/MainWindow.qml
+Toolbar 1.0 qml/components/Toolbar.qml
+WeatherCard 1.0 qml/components/WeatherCard.qml
+NavigationButton 1.0 qml/components/NavigationButton.qml
+TimePicker 1.0 qml/components/TimePicker.qml
+CitySelector 1.0 qml/components/CitySelector.qml
+TodayView 1.0 qml/views/TodayView.qml
+PastView 1.0 qml/views/PastView.qml
+FutureView 1.0 qml/views/FutureView.qml
+SettingsView 1.0 qml/views/SettingsView.qml
+

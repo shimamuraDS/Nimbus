@@ -1,0 +1,50 @@
+#include "SettingsViewModel.h"
+#include "../util/Config.h"
+
+namespace ViewModel {
+
+SettingsViewModel::SettingsViewModel(Service::LocationService* locationService,
+                                     QObject* parent)
+    : QObject(parent), m_locationService(locationService) {}
+
+bool SettingsViewModel::isAutoLocation() const {
+    return Util::Config::getInstance().isAutoLocation();
+}
+
+QString SettingsViewModel::manualCityName() const {
+    return Util::Config::getInstance().getManualCityName();
+}
+
+QStringList SettingsViewModel::alertTimeList() const {
+    return Util::Config::getInstance().getAlertTimes();
+}
+
+void SettingsViewModel::setAutoLocation(bool isAuto) {
+    if (isAutoLocation() == isAuto) return;
+
+    auto& config = Util::Config::getInstance();
+    if (isAuto) {
+        m_locationService->switchToAuto();
+    } else {
+        m_locationService->switchToManual(config.getManualAdcode(),
+                                          config.getManualCityName());
+    }
+    emit settingsChanged();
+}
+
+void SettingsViewModel::setManualCity(int adcode, const QString& name) {
+    m_locationService->switchToManual(adcode, name);
+    emit settingsChanged();
+}
+
+void SettingsViewModel::addAlertTime(const QString& time) {
+    Util::Config::getInstance().addAlertTime(time);
+    emit alertTimeListChanged();
+}
+
+void SettingsViewModel::removeAlertTime(const QString& time) {
+    Util::Config::getInstance().removeAlertTime(time);
+    emit alertTimeListChanged();
+}
+
+} // namespace ViewModel

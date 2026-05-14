@@ -1,0 +1,18 @@
+{
+    "classes": [
+        {
+            "className": "HttpClient",
+            "lineNumber": 12,
+            "object": true,
+            "qualifiedClassName": "Network::HttpClient",
+            "superClasses": [
+                {
+                    "access": "public",
+                    "name": "QObject"
+                }
+            ]
+        }
+    ],
+    "inputFile": "HttpClient.h",
+    "outputRevision": 68
+}

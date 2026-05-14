@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="qtquickcontrols2.conf">qtquickcontrols2.conf</file>
+    </qresource>
+    <qresource prefix="/resources">
+        <file>app.rc</file>
+    </qresource>
+    <qresource prefix="/resources/icons/weather">
+        <file alias="sunny.png">icons/sunny.png</file>
+        <file alias="cloudy.png">icons/cloudy.png</file>
+        <file alias="overcast.png">icons/overcast.png</file>
+        <file alias="thunderstorm.png">icons/thunderstorm.png</file>
+        <file alias="snow.png">icons/snow.png</file>
+        <file alias="rain.png">icons/rain.png</file>
+        <file alias="fog.png">icons/fog.png</file>
+        <file alias="sandstorm.png">icons/sandstorm.png</file>
+        <file alias="unknown.png">icons/unknown.png</file>
+        <file alias="warning.png">icons/warning.png</file>
+    </qresource>
+</RCC>

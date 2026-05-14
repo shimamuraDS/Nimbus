@@ -1,0 +1,20 @@
+[
+    {
+        "moduleFiles": [
+            {
+                "entries": [
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 18,
+                        "durationMicroseconds": 0,
+                        "errorMessage": "Could not find signal \"activated\".",
+                        "functionName": "onActivated",
+                        "line": 20
+                    }
+                ],
+                "filepath": "E:/WeatherApp/qml/components/CitySelector.qml"
+            }
+        ],
+        "moduleId": "WeatherApp(WeatherApp)"
+    }
+]
