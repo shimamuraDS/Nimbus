@@ -40,6 +40,7 @@ QString WeatherViewModel::currentCity() const { return m_currentCity; }
 QVariantMap WeatherViewModel::todayWeather() const { return m_todayWeather; }
 QVariantList WeatherViewModel::pastWeatherList() const { return m_pastWeatherList; }
 QVariantList WeatherViewModel::futureWeatherList() const { return m_futureWeatherList; }
+QVariantList WeatherViewModel::hourlyList() const { return m_hourlyList; }
 bool WeatherViewModel::isAutoLocation() const { return Util::Config::getInstance().isAutoLocation(); }
 bool WeatherViewModel::isLoading() const { return m_isLoading; }
 bool WeatherViewModel::isOffline() const { return m_isOffline; }
@@ -104,6 +105,7 @@ void WeatherViewModel::loadFromCache() {
     m_todayWeather.clear();
     m_pastWeatherList.clear();
     m_futureWeatherList.clear();
+    m_hourlyList.clear();
 
     // 加载过去7天
     QList<Data::DailyWeather> pastList = cache.getPastSevenDays();
@@ -138,7 +140,25 @@ void WeatherViewModel::loadFromCache() {
         }
     }
 
+    // 加载逐小时数据
+    QJsonArray hourlyData = cache.getHourlyData();
+    for (const QJsonValue& val : hourlyData) {
+        QJsonObject obj = val.toObject();
+        QString hourStr = obj["hour"].toString();       // "2026-05-15 14:00"
+        QJsonObject info = obj["info"].toObject();
+
+        // 只取时间 HH:00 部分，只保留未来24小时内的数据
+        QString time = hourStr.length() >= 16 ? hourStr.mid(11, 5) : hourStr;
+
+        QVariantMap map;
+        map["time"] = time;
+        map["weather"] = info["weather"].toString("");
+        map["temperature"] = info["temperature"].toInt(0);
+        m_hourlyList.append(map);
+    }
+
     emit weatherDataChanged();
+    emit hourlyDataChanged();
 }
 
 } // namespace ViewModel

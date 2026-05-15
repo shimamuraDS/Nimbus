@@ -10,20 +10,16 @@ Item {
 
     objectName: "TodayView"
 
-    function vm() {
-        return (typeof weatherViewModel !== "undefined") ? weatherViewModel : null
-    }
-    function hasTodayData() {
-        var vm = root.vm()
-        if (!vm) return false
-        var tw = vm.todayWeather
-        return tw && tw.date && tw.date !== ""
+    function currentHourStr() {
+        var now = new Date()
+        var hh = now.getHours().toString().padStart(2, '0')
+        return hh + ":00"
     }
 
     RowLayout {
         anchors.fill: parent
         anchors.margins: theme.spacingMedium
-        spacing: theme.spacingMedium
+        spacing: 0
 
         NavigationButton {
             direction: "left"
@@ -33,19 +29,32 @@ Item {
             }
         }
 
-        WeatherCard {
-            id: card
-            Layout.alignment: Qt.AlignCenter
+        Flickable {
+            id: flick
             Layout.fillWidth: true
             Layout.fillHeight: true
+            contentWidth: row.width
+            contentHeight: height
+            clip: true
+            interactive: contentWidth > width
 
-            date: hasTodayData() ? root.vm().todayWeather.date : (root.vm() && root.vm().isLoading ? qsTr("获取中...") : qsTr("暂无数据"))
-            dayWeather: hasTodayData() ? (root.vm().todayWeather.dayWeather || "--") : "--"
-            dayTemp: hasTodayData() ? (root.vm().todayWeather.dayTemp || 0) : 0
-            dayHumidity: hasTodayData() ? (root.vm().todayWeather.dayHumidity || 0) : 0
-            nightWeather: hasTodayData() ? (root.vm().todayWeather.nightWeather || "--") : "--"
-            nightTemp: hasTodayData() ? (root.vm().todayWeather.nightTemp || 0) : 0
-            nightHumidity: hasTodayData() ? (root.vm().todayWeather.nightHumidity || 0) : 0
+            Row {
+                id: row
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: theme.spacingSmall
+                x: Math.max(0, (flick.width - row.width) / 2)
+
+                Repeater {
+                    model: typeof weatherViewModel !== "undefined" ? weatherViewModel.hourlyList : []
+
+                    delegate: HourlyCard {
+                        time: modelData.time || "--:--"
+                        weather: modelData.weather || "--"
+                        temperature: modelData.temperature || 0
+                        isNow: modelData.time === root.currentHourStr()
+                    }
+                }
+            }
         }
 
         NavigationButton {

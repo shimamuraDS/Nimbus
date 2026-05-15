@@ -20,6 +20,7 @@ class WeatherViewModel : public QObject {
     Q_PROPERTY(bool isAutoLocation READ isAutoLocation NOTIFY locationModeChanged)
     Q_PROPERTY(bool isLoading READ isLoading NOTIFY isLoadingChanged)
     Q_PROPERTY(bool isOffline READ isOffline NOTIFY isOfflineChanged)
+    Q_PROPERTY(QVariantList hourlyList READ hourlyList NOTIFY hourlyDataChanged)
 
 public:
     explicit WeatherViewModel(Service::WeatherService* weatherService,
@@ -34,6 +35,7 @@ public:
     bool isAutoLocation() const;
     bool isLoading() const;
     bool isOffline() const;
+    QVariantList hourlyList() const;
 
     Q_INVOKABLE void requestData();
     Q_INVOKABLE void switchLocationMode();
@@ -47,6 +49,7 @@ signals:
     void locationModeChanged();
     void isLoadingChanged();
     void isOfflineChanged();
+    void hourlyDataChanged();
 
 private slots:
     void onLocationChanged(int adcode, const QString& cityName);
@@ -62,6 +65,7 @@ private:
     QVariantMap m_todayWeather;
     QVariantList m_pastWeatherList;
     QVariantList m_futureWeatherList;
+    QVariantList m_hourlyList;
     bool m_isLoading;
     bool m_isOffline;
 };
