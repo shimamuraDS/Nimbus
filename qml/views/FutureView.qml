@@ -10,37 +10,75 @@ Item {
 
     objectName: "FutureView"
 
-    RowLayout {
+    ColumnLayout {
         anchors.fill: parent
         anchors.margins: theme.spacingMedium
-        spacing: theme.spacingMedium
+        spacing: theme.spacingTiny
 
-        NavigationButton {
-            direction: "left"
-            onClicked: {
-                mainWindow.navGoingLeft = false
-                stackView.pop()
-            }
+        Text {
+            text: qsTr("未来 7 天")
+            font: theme.subtitleFont
+            color: theme.accent
+            Layout.alignment: Qt.AlignHCenter
         }
 
-        ListView {
+        Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            orientation: ListView.Horizontal
-            spacing: theme.spacingSmall
-            clip: true
-            model: typeof weatherViewModel !== "undefined" ? weatherViewModel.futureWeatherList : []
 
-            delegate: WeatherCard {
-                width: 200
+            Item {
+                id: alignedRow
+                y: Math.max(0, (parent.height - 150) * 0.35)
+                width: parent.width
                 height: 150
-                date: modelData.date || ""
-                dayWeather: modelData.dayWeather || "--"
-                dayTemp: modelData.dayTemp || 0
-                dayHumidity: modelData.dayHumidity || 0
-                nightWeather: modelData.nightWeather || "--"
-                nightTemp: modelData.nightTemp || 0
-                nightHumidity: modelData.nightHumidity || 0
+
+                Flickable {
+                    id: flick
+                    anchors {
+                        fill: parent
+                        leftMargin: 50
+                        rightMargin: 50
+                    }
+                    contentWidth: Math.max(row.width + row.x, width)
+                    contentHeight: height
+                    clip: true
+                    interactive: contentWidth > width
+
+                    Row {
+                        id: row
+                        spacing: theme.spacingSmall
+                        x: Math.max(0, (flick.width - row.width) / 2)
+
+                        Repeater {
+                            model: typeof weatherViewModel !== "undefined" ? weatherViewModel.futureWeatherList : []
+
+                            delegate: WeatherCard {
+                                width: 200
+                                height: 150
+                                date: modelData.date || ""
+                                dayWeather: modelData.dayWeather || "--"
+                                dayTemp: modelData.dayTemp || 0
+                                dayHumidity: modelData.dayHumidity || 0
+                                nightWeather: modelData.nightWeather || "--"
+                                nightTemp: modelData.nightTemp || 0
+                                nightHumidity: modelData.nightHumidity || 0
+                            }
+                        }
+                    }
+                }
+
+                NavigationButton {
+                    id: backBtn
+                    anchors {
+                        left: parent.left
+                        verticalCenter: parent.verticalCenter
+                    }
+                    direction: "left"
+                    onClicked: {
+                        mainWindow.navGoingLeft = false
+                        stackView.pop()
+                    }
+                }
             }
         }
     }

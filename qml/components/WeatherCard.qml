@@ -4,15 +4,14 @@ import QtQuick.Layouts
 
 Rectangle {
     id: root
-
-    Theme { id: theme }
-
     width: 220
     height: 160
     radius: theme.radiusMedium
-    color: theme.cardBg
-    border.color: theme.cardBorder
+    color: isPast ? "#25ffd599" : "#2089b4fa"
+    border.color: isPast ? "#35ffd599" : "#3089b4fa"
     border.width: 1
+
+    Theme { id: theme }
 
     property string date: qsTr("未知日期")
     property string dayWeather: "--"
@@ -21,8 +20,9 @@ Rectangle {
     property string nightWeather: "--"
     property int nightTemp: 0
     property int nightHumidity: 0
+    property bool isPast: false
 
-    // ── Shadow (offset dark rectangle beneath the card) ──
+    // ── Shadow ──
     Rectangle {
         anchors.fill: parent
         anchors.leftMargin: 2
