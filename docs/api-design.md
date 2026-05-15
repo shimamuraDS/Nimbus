@@ -22,14 +22,14 @@
 ### 2.1 获取未来多日预报 (用于渲染主页与未来页)
 
 *   **请求参数**：`key`, `adcode`, `type=future`, `get_md=1` (获取当天加未来 6 天，共 7 天)。
-*   **核心返回字段**：解析 `result.forecast.infos` 数组。
+*   **核心返回字段**：解析 `result.forecast[0].infos` 数组。
     *   `date`: 日期。
     *   `day` (白天) / `night` (夜晚): 分别包含 `weather` (天气描述)、`temperature` (温度)、`humidity` (湿度)。
 
 ### 2.2 获取未来 24 小时预报 (用于构建历史缓存库及恶劣天气兜底)
 
 *   **请求参数**：`key`, `adcode`, `type=hours` (未来 24 小时天气预报，起始时间为当前时间的前一个小时)。
-*   **核心返回字段**：解析 `result.forecast_hours.infos` 数组。
+*   **核心返回字段**：解析 `result.forecast_hours[0].infos` 数组。
     *   `hour`: 预报时间戳（如 `2025-09-26 18:05`）。
     *   `info`: 包含 `weather` (天气描述)、`temperature` (温度)、`wind_direction` (风向)、`wind_power` (风力)。
     *   项目按 1 小时粒度去重并提取每天 08:00 (早) 和 20:00 (晚) 用于追溯过去 7 天记录。
@@ -37,11 +37,11 @@
 ### 2.3 获取实时灾害预警 (用于高优弹窗触发)
 
 *   **请求参数**：`key`, `adcode`, `type=now`, `added_fields=alarm` (附加预警信息)。
-*   **核心返回字段**：解析 `result.alarms` 数组。
+*   **核心返回字段**：解析 `result.realtime[0].alarms` 数组。
     *   `title`: 预警名称（如"北京市海淀区发布大雾黄色预警"）。
     *   `pub_content`: 预警发布详情。
 
 ## 3. 异常天气判断标准
 
-*   **高优触发**：`result.alarms` 数组非空，直接判定为异常预警天气。
+*   **高优触发**：`result.realtime[0].alarms` 数组非空，直接判定为异常预警天气。
 *   **兜底触发**：遍历 `hourly_data` 中未来 3 小时内的逐小时预报，若 `weather` 字段包含"暴雨"、"冰雹"、"沙尘暴"、"冻雨"等极端关键字，判定为异常。

@@ -28,15 +28,12 @@ WeatherApp/
 │   └── user-guide.md           # 使用说明
 ├── src/                        # C++ 源代码
 │   ├── main.cpp                # 应用程序入口
-│   ├── app/
-│   │   └── Application.h/.cpp  # QApplication子类，管理生命周期
 │   ├── data/
 │   │   └── WeatherCacheManager.h/.cpp  # JSON 本地缓存管理 (逐小时hourly_data)
 │   ├── service/
 │   │   ├── WeatherService.h/.cpp       # 天气数据获取与处理
 │   │   ├── LocationService.h/.cpp      # 定位服务(IP自动+手动)
 │   │   ├── AlertService.h/.cpp         # 异常天气检测与提醒调度
-│   │   ├── HttpService.h/.cpp          # 封装 QNetworkAccessManager，调用腾讯API
 │   │   └── NotificationManager.h/.cpp  # 封装 Windows 弹窗提醒系统
 │   ├── viewmodel/
 │   │   ├── WeatherViewModel.h/.cpp     # QML 与 C++ 的数据桥梁
@@ -50,28 +47,27 @@ WeatherApp/
 │       ├── WeatherCode.h/.cpp          # 天气代码映射(图标/描述)
 │       └── TimeUtil.h/.cpp             # 时间处理工具
 ├── qml/                        # UI 层代码
-│   ├── MainWindow.qml          # 主窗口容器 (托盘图标、StackView 路由)
+│   ├── MainWindow.qml          # 主窗口容器 (StackView 路由)
 │   ├── views/
 │   │   ├── TodayView.qml       # 当日天气界面
 │   │   ├── PastView.qml        # 过去7天天气界面
 │   │   ├── FutureView.qml      # 未来7天天气界面
 │   │   └── SettingsView.qml    # 设置与提醒时间配置界面
-│   ├── components/
-│   │   ├── Toolbar.qml         # 顶部导航工具栏
-│   │   ├── WeatherCard.qml     # 天气卡片(早晚)
-│   │   ├── NavigationButton.qml# 导航按钮
-│   │   ├── TimePicker.qml      # 时间选择器
-│   │   └── CitySelector.qml    # 城市选择器
-│   └── icons/                  # SVG图标
+│   └── components/
+│       ├── Toolbar.qml         # 顶部导航工具栏
+│       ├── WeatherCard.qml     # 天气卡片(早晚)
+│       ├── NavigationButton.qml# 导航按钮
+│       ├── TimePicker.qml      # 时间选择器
+│       └── CitySelector.qml    # 城市选择器
 ├── resources/
 │   ├── resources.qrc           # Qt资源文件
-│   └── app.rc                  # Windows资源(图标等)
+│   ├── app.rc                  # Windows资源(图标等)
+│   └── icons/                  # PNG图标
 ├── tests/                      # 单元与集成测试
 │   ├── CMakeLists.txt
 │   ├── tst_HourlyMerge.cpp
 │   ├── tst_AlertCondition.cpp
-│   ├── tst_HttpService.cpp
-│   └── tst_CacheManager.cpp
+│   └── tst_HttpService.cpp
 └── scripts/                    # 打包与部署脚本
     └── setup.iss               # Inno Setup 安装包脚本
 ```
@@ -96,15 +92,15 @@ WeatherApp/
 
 **A. 逐小时天气 (构建1小时粒度数据网)**
 *   **参数**：`type=hours`（未来24小时天气预报，起始时间为当前时间的前一个小时）。
-*   **解析**：提取 `result.forecast_hours` 数组，解析每个对象的 `hour` (如 2025-09-26 18:05) 和 `info` 节点下的 `weather` (天气描述)、`temperature` (温度)、`wind_direction` (风向)、`wind_power` (风力)。
+*   **解析**：提取 `result.forecast_hours[0].infos` 数组，解析每个对象的 `hour` (如 2026-05-13 13:00:00) 和 `info` 节点下的 `weather` (天气描述)、`temperature` (温度)、`wind_direction` (风向)、`wind_power` (风力)。
 
 **B. 实时与预警天气 (高优异常触发)**
 *   **参数**：`type=now&added_fields=alarm`。
-*   **解析**：提取 `result.alarms` 数组用于高优先级官方预警通知。
+*   **解析**：提取 `result.realtime[0].alarms` 数组用于高优先级官方预警通知。
 
 **C. 未来多日预报 (常规7天渲染)**
 *   **参数**：`type=future&get_md=1` (当天加未来6天，共7天数据)。
-*   **解析**：提取 `result.forecast.infos` 数组，解析 `day` 和 `night` 节点。
+*   **解析**：提取 `result.forecast[0].infos` 数组，解析 `day` 和 `night` 节点。
 
 ### 3. 异常天气判断标准
 
@@ -126,10 +122,12 @@ WeatherApp/
   "hourly_data": [
     {
       "hour": "2026-05-11 08:00",
-      "weather": "晴",
-      "temperature": 25,
-      "wind_direction": "东北风",
-      "wind_power": "1-2级"
+      "info": {
+        "weather": "晴",
+        "temperature": 25,
+        "wind_direction": "东北风",
+        "wind_power": "1-2级"
+      }
     }
   ],
   "future_forecast": [
@@ -147,23 +145,16 @@ WeatherApp/
 
 ### 2. QSettings 键值设计
 
-*   `Settings/IsAutoLocation` (bool)：自动定位开启状态。
-*   `Settings/ManualAdcode` (int) / `ManualCityName` (QString)：手动选择的城市信息。
-*   `Settings/AlertTimes` (QStringList)：提醒时间点列表。
+*   `Location/IsAuto` (bool)：自动定位开启状态。
+*   `Location/ManualAdcode` (int) / `Location/ManualCityName` (QString)：手动选择的城市信息。
+*   `Alerts/Times` (QStringList)：提醒时间点列表。
 
 ### 3. C++数据结构定义
 
 ```cpp
-// 小时级天气记录
-struct HourlyWeather {
-    QString hour;          // "2026-05-12 16:00"
-    QString weather;
-    int temperature;
-    QString windDirection;
-    QString windPower;
-};
+// 小时级天气记录 — 直接以 QJsonObject 存储于 hourly_data 数组，格式见 JSON 缓存结构
 
-// 日常早晚天气记录封装
+// 日常早晚天气记录封装 (定义于 WeatherCacheManager.h)
 struct DailyWeather {
     QString date;
     QString dayWeather;
@@ -174,13 +165,7 @@ struct DailyWeather {
     int nightHumidity;
 };
 
-// 预警封装
-struct WeatherAlarm {
-    QString typeName;
-    QString levelName;
-    QString title;
-    QString content;
-};
+// 预警信息 — 直接以 QJsonArray 存储，通过 alarms API 获取
 ```
 
 ---
@@ -216,8 +201,8 @@ struct WeatherAlarm {
             *   UI 展示：`自动定位：【当前城市名】` 以及超链接样式的 `[定位不准？]` 按钮。
             *   交互行为：点击 `[定位不准？]` 弹出城市选择器，用户选中目标城市后，修改本地配置，切换至状态 B。
         *   **状态 B（手动定位中）**：
-            *   UI 展示：`手动定位：【目标城市名】` 以及超链接样式的 `[恢复自动定位]` 按钮。
-            *   交互行为：点击 `[恢复自动定位]`，修改本地配置为自动，重新调用 IP 定位接口，切换回状态 A。
+            *   UI 展示：`手动定位：【选择城市】手动定位`，同时城市选择器下拉框可见。
+            *   交互行为：点击 `手动定位` 超链接文本，修改本地配置为自动，重新调用 IP 定位接口，切换回状态 A。
         *   时间管理：绑定 `alertTimeList`。初始显示 "设置提醒时间：【添加时间点】"；添加后，每项尾部附带一个 "【删除时间点】" 按键。
 *   **`WeatherCard`**：天气卡片组件，显示早晚天气、气温、湿度。
 *   **`NavigationButton`**：导航按钮组件（左/右箭头）。
@@ -237,14 +222,14 @@ struct WeatherAlarm {
 
 ### 1. 统一数据刷新周期（避免过度轮询）
 
-*   **策略**：废弃"UI 时间检查触发网络请求"的过度设计。后台 `QTimer` 设置为 **每 30 分钟** 统一拉取一次最新数据（含 `hours`, `now`, `future`），将最新预警存入内存和 JSON 缓存。
+*   **策略**：天气数据在应用启动与定位变更时统一拉取最新数据（含 `hours`, `now`, `future`），将最新预警存入内存和 JSON 缓存。
 
 ### 2. 基于逐小时数据的双重检查策略
 
-前端运行轻量级每分钟 `QTimer` 对比当前时间与 `Settings/AlertTimes`：
+前端运行轻量级每分钟 `QTimer` 对比当前时间与配置中的提醒时间列表（`Alerts/Times`）：
 
 *   当系统时间匹配设定的提醒时间时，直接从**本地缓存**中读取数据进行双重判定：
-    1.  **官方预警命中**：内存中 `current_alarms` 数组非空（来源于最近 30 分钟拉取的 `type=now&added_fields=alarm`）。
+    1.  **官方预警命中**：缓存中 `current_alarms` 数组非空（来源于最近一次 `type=now&added_fields=alarm` 请求）。
     2.  **逐小时恶劣天气命中**：遍历 `hourly_data` 中**未来 3 小时内**的逐小时预报。若其 `weather` 字段包含"暴雨"、"冰雹"、"沙尘暴"、"冻雨"等极端关键字，判定为异常。
 
 ### 3. Windows原生通知格式
@@ -272,22 +257,38 @@ set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Qml Quick Network Widgets)
 
-set(SRC_FILES
-    src/main.cpp
-    src/app/Application.cpp
+set(TOOL_SRCS
+    src/util/Config.cpp
+    src/util/TimeUtil.cpp
+    src/util/WeatherCode.cpp
+)
+set(DATA_SRCS
+    src/data/WeatherCacheManager.cpp
+)
+set(NET_SRCS
     src/network/HttpClient.cpp
     src/network/TencentApiClient.cpp
+)
+set(SERVICE_SRCS
     src/service/WeatherService.cpp
     src/service/LocationService.cpp
     src/service/AlertService.cpp
     src/service/NotificationManager.cpp
-    src/data/WeatherCacheManager.cpp
+)
+set(VM_SRCS
     src/viewmodel/WeatherViewModel.cpp
     src/viewmodel/SettingsViewModel.cpp
     src/viewmodel/TrayViewModel.cpp
-    src/util/Config.cpp
-    src/util/WeatherCode.cpp
-    src/util/TimeUtil.cpp
+)
+
+set(APP_SRCS
+    src/main.cpp
+    ${TOOL_SRCS}
+    ${DATA_SRCS}
+    ${NET_SRCS}
+    ${SERVICE_SRCS}
+    ${VM_SRCS}
+    resources/resources.qrc
 )
 
 qt_add_qml_module(WeatherApp URI "WeatherApp" VERSION 1.0
@@ -304,10 +305,33 @@ qt_add_qml_module(WeatherApp URI "WeatherApp" VERSION 1.0
         qml/views/SettingsView.qml
 )
 
-# 使用 WIN32_EXECUTABLE 隐藏控制台窗口
-add_executable(WeatherApp WIN32 ${SRC_FILES})
+# 使用 WIN32 属性隐藏 Windows 默认的控制台黑框
+add_executable(WeatherApp WIN32 ${APP_SRCS})
+
+# 注册 QML 模块
+qt_add_qml_module(WeatherApp
+    URI "WeatherApp"
+    VERSION 1.0
+    QML_FILES
+        qml/MainWindow.qml
+        qml/components/Toolbar.qml
+        qml/components/WeatherCard.qml
+        qml/components/NavigationButton.qml
+        qml/components/TimePicker.qml
+        qml/components/CitySelector.qml
+        qml/views/TodayView.qml
+        qml/views/PastView.qml
+        qml/views/FutureView.qml
+        qml/views/SettingsView.qml
+)
+
 target_link_libraries(WeatherApp PRIVATE
-    Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::Network Qt6::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Qml
+    Qt6::Quick
+    Qt6::Network
+    Qt6::Widgets
 )
 
 enable_testing()
@@ -325,7 +349,7 @@ add_subdirectory(tests)
 
 ### 1. 单元测试（QtTest）
 
-*   `tst_HourlyMerge`：测试 `WeatherCacheManager` 能否正确将新请求的 24 小时 `forecast_hours` 节点无缝去重并追加合并至旧的 `hourly_data` 时间序列中。
+*   `tst_HourlyMerge`：测试 `WeatherCacheManager` 能否正确将新请求的逐小时数据去重并追加合并至 `hourly_data` 缓存中，同时验证去重逻辑（同时间点数据覆盖更新）。
 *   `tst_AlertCondition`：输入预设恶劣天气的 `hourly_data` 模拟数据，断言在目标提醒时间时是否能正确拦截到"未来3小时内的暴雪"并触发警报。
 *   `tst_HttpService`：Mock `QNetworkAccessManager` 返回本地 JSON，验证天气、定位数据的解析是否正确映射到 C++ 结构体。
 
@@ -362,8 +386,7 @@ OutputDir=.\Installer
 OutputBaseFilename=WeatherApp_Setup
 
 [Files]
-Source: "Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "config.ini"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build-release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\WeatherApp"; Filename: "{app}\WeatherApp.exe"
@@ -375,6 +398,7 @@ ValueType: string; ValueName: "WeatherApp"; ValueData: "{app}\WeatherApp.exe -hi
 
 [UninstallDelete]
 Type: files; Name: "{localappdata}\WeatherApp\weather_cache.json"
+Type: files; Name: "{localappdata}\EnterpriseCorp\WeatherApp\weather_cache.json"
 ```
 
 ### 3. 开机自启与卸载清理

@@ -51,7 +51,8 @@ void AlertService::checkAlerts() {
         QDateTime dt = Util::TimeUtil::parseTencentHour(hourStr);
 
         if (Util::TimeUtil::isWithinFutureHours(dt, 3)) {
-            QString weatherDesc = hourObj["weather"].toString();
+            QJsonObject info = hourObj["info"].toObject();
+            QString weatherDesc = info["weather"].toString();
 
             if (Util::WeatherCode::isSevereWeather(weatherDesc)) {
                 QString title = QString::fromUtf8("极端天气提醒：未来数小时将有") + weatherDesc;

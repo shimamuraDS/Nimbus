@@ -8,7 +8,7 @@
 *   **Network Layer (`src/network`)**：封装 `QNetworkAccessManager`，`TencentApiClient` 处理 IP 定位与三种天气 API 的并发抓取及 JSON 结构反序列化。
 *   **Service Layer (`src/service`)**：`WeatherService`, `LocationService`, `AlertService`, `NotificationManager`，负责业务逻辑流转、Windows 原生弹窗唤起以及定时任务调度。
 *   **ViewModel Layer (`src/viewmodel`)**：继承自 `QObject`，通过 `Q_PROPERTY` 暴露 `todayWeather`, `pastWeatherList` 等属性，供前端 UI 数据绑定。
-*   **View Layer (`qml/`)**：分为 `components` (高复用组件，如 `WeatherCard`, `Toolbar`) 和 `pages` (页面路由，如 `TodayView`, `SettingsView`)。
+*   **View Layer (`qml/`)**：分为 `components` (高复用组件，如 `WeatherCard`, `Toolbar`) 和 `views` (页面容器，如 `TodayView`, `SettingsView`)。
 
 ### 分层依赖关系
 

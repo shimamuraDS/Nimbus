@@ -18,18 +18,22 @@ private slots:
         QJsonArray hoursInfos;
         QJsonObject hour1;
         hour1["hour"] = "2026-05-12 08:00";
-        hour1["weather"] = QString::fromUtf8("晴");
-        hour1["temperature"] = 25;
-        hour1["wind_direction"] = QString::fromUtf8("东北风");
-        hour1["wind_power"] = "1-2";
+        QJsonObject info1;
+        info1["weather"] = QString::fromUtf8("晴");
+        info1["temperature"] = 25;
+        info1["wind_direction"] = QString::fromUtf8("东北风");
+        info1["wind_power"] = "1-2";
+        hour1["info"] = info1;
         hoursInfos.append(hour1);
 
         QJsonObject hour2;
         hour2["hour"] = "2026-05-12 09:00";
-        hour2["weather"] = QString::fromUtf8("多云");
-        hour2["temperature"] = 27;
-        hour2["wind_direction"] = QString::fromUtf8("东风");
-        hour2["wind_power"] = "2-3";
+        QJsonObject info2;
+        info2["weather"] = QString::fromUtf8("多云");
+        info2["temperature"] = 27;
+        info2["wind_direction"] = QString::fromUtf8("东风");
+        info2["wind_power"] = "2-3";
+        hour2["info"] = info2;
         hoursInfos.append(hour2);
 
         cache.appendHourlyData(hoursInfos);
@@ -42,10 +46,12 @@ private slots:
         QJsonArray updatedHours;
         QJsonObject updatedHour1;
         updatedHour1["hour"] = "2026-05-12 08:00";
-        updatedHour1["weather"] = QString::fromUtf8("晴");
-        updatedHour1["temperature"] = 28;
-        updatedHour1["wind_direction"] = QString::fromUtf8("东北风");
-        updatedHour1["wind_power"] = "1-2";
+        QJsonObject updatedInfo1;
+        updatedInfo1["weather"] = QString::fromUtf8("晴");
+        updatedInfo1["temperature"] = 28;
+        updatedInfo1["wind_direction"] = QString::fromUtf8("东北风");
+        updatedInfo1["wind_power"] = "1-2";
+        updatedHour1["info"] = updatedInfo1;
         updatedHours.append(updatedHour1);
 
         cache.appendHourlyData(updatedHours);
@@ -56,7 +62,7 @@ private slots:
         for (int i = 0; i < afterResult.size(); ++i) {
             QJsonObject obj = afterResult[i].toObject();
             if (obj["hour"].toString() == "2026-05-12 08:00") {
-                QCOMPARE(obj["temperature"].toInt(), 28);
+                QCOMPARE(obj["info"].toObject()["temperature"].toInt(), 28);
                 found = true;
             }
         }
