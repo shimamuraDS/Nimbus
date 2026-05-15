@@ -47,18 +47,19 @@ WeatherApp/
 │       ├── WeatherCode.h/.cpp          # 天气代码映射(图标/描述)
 │       └── TimeUtil.h/.cpp             # 时间处理工具
 ├── qml/                        # UI 层代码
-│   ├── MainWindow.qml          # 主窗口容器 (StackView 路由)
+│   ├── MainWindow.qml          # 主窗口容器 (StackView 路由 + 过渡动画)
 │   ├── views/
 │   │   ├── TodayView.qml       # 当日天气界面
 │   │   ├── PastView.qml        # 过去7天天气界面
 │   │   ├── FutureView.qml      # 未来7天天气界面
 │   │   └── SettingsView.qml    # 设置与提醒时间配置界面
 │   └── components/
-│       ├── Toolbar.qml         # 顶部导航工具栏
-│       ├── WeatherCard.qml     # 天气卡片(早晚)
-│       ├── NavigationButton.qml# 导航按钮
-│       ├── TimePicker.qml      # 时间选择器
-│       └── CitySelector.qml    # 城市选择器
+│       ├── Theme.qml           # 全局深色玻璃态视觉主题定义
+│       ├── Toolbar.qml         # 顶部导航工具栏(透明融入背景)
+│       ├── WeatherCard.qml     # 天气卡片(早晚,玻璃态+阴影)
+│       ├── NavigationButton.qml# 圆形导航按钮(hover+缩放动画)
+│       ├── TimePicker.qml      # 深色风格时间选择器
+│       └── CitySelector.qml    # 城市选择器(98个城市)
 ├── resources/
 │   ├── resources.qrc           # Qt资源文件
 │   ├── app.rc                  # Windows资源(图标等)
@@ -196,14 +197,14 @@ struct DailyWeather {
     *   `TodayView`：中心渲染 `todayWeather` 绑定的早晚数据。左侧按键 Push 到 `PastView`，右侧按键 Push 到 `FutureView`。
     *   `PastView`：渲染 `pastWeatherList` 列表，右侧按键 Pop 返回主页。
     *   `FutureView`：渲染 `futureWeatherList` 列表，左侧按键 Pop 返回主页。
-    *   `SettingsView`（重点优化定位切换状态机）：
+    *   `SettingsView`（定位切换与提醒管理）：
         *   **状态 A（自动定位中）**：
-            *   UI 展示：`自动定位：【当前城市名】` 以及超链接样式的 `[定位不准？]` 按钮。
-            *   交互行为：点击 `[定位不准？]` 弹出城市选择器，用户选中目标城市后，修改本地配置，切换至状态 B。
+            *   UI 展示：`自动定位：【当前城市名】` + 超链接样式的 `定位不准？` 按钮（蓝色下划线，仅此部分可点击）。
+            *   交互行为：点击 `定位不准？` 切换至手动模式，显示城市下拉框。
         *   **状态 B（手动定位中）**：
-            *   UI 展示：`手动定位：【选择城市】手动定位`，同时城市选择器下拉框可见。
-            *   交互行为：点击 `手动定位` 超链接文本，修改本地配置为自动，重新调用 IP 定位接口，切换回状态 A。
-        *   时间管理：绑定 `alertTimeList`。初始显示 "设置提醒时间：【添加时间点】"；添加后，每项尾部附带一个 "【删除时间点】" 按键。
+            *   UI 展示：`选择城市：` 标签 + 城市下拉框（内置 98 个全国城市）+ `返回自动定位` 链接。
+            *   交互行为：用户从下拉框选择城市后天气立即更新。点击 `返回自动定位` 恢复 IP 定位。
+        *   时间管理：绑定 `alertTimeList`。常驻"添加时间点"按钮；添加后，每项尾部附带红色"删除"按钮。
 *   **`WeatherCard`**：天气卡片组件，显示早晚天气、气温、湿度。
 *   **`NavigationButton`**：导航按钮组件（左/右箭头）。
 *   **`TimePicker`**：时间选择器组件。
@@ -294,6 +295,7 @@ set(APP_SRCS
 qt_add_qml_module(WeatherApp URI "WeatherApp" VERSION 1.0
     QML_FILES
         qml/MainWindow.qml
+        qml/components/Theme.qml
         qml/components/Toolbar.qml
         qml/components/WeatherCard.qml
         qml/components/NavigationButton.qml
@@ -314,6 +316,7 @@ qt_add_qml_module(WeatherApp
     VERSION 1.0
     QML_FILES
         qml/MainWindow.qml
+        qml/components/Theme.qml
         qml/components/Toolbar.qml
         qml/components/WeatherCard.qml
         qml/components/NavigationButton.qml
