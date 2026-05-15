@@ -5,17 +5,21 @@ import "../components"
 
 Item {
     id: root
+
+    Theme { id: theme }
+
     objectName: "FutureView"
 
     RowLayout {
         anchors.fill: parent
-        anchors.margins: 10
-        spacing: 15
+        anchors.margins: theme.spacingMedium
+        spacing: theme.spacingMedium
 
         NavigationButton {
             direction: "left"
             onClicked: {
-                if (stackView) stackView.pop()
+                mainWindow.navGoingLeft = false
+                stackView.pop()
             }
         }
 
@@ -23,7 +27,7 @@ Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
             orientation: ListView.Horizontal
-            spacing: 10
+            spacing: theme.spacingSmall
             clip: true
             model: typeof weatherViewModel !== "undefined" ? weatherViewModel.futureWeatherList : []
 

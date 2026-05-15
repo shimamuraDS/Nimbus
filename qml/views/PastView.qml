@@ -5,18 +5,21 @@ import "../components"
 
 Item {
     id: root
+
+    Theme { id: theme }
+
     objectName: "PastView"
 
     RowLayout {
         anchors.fill: parent
-        anchors.margins: 10
-        spacing: 15
+        anchors.margins: theme.spacingMedium
+        spacing: theme.spacingMedium
 
         ListView {
             Layout.fillWidth: true
             Layout.fillHeight: true
             orientation: ListView.Horizontal
-            spacing: 10
+            spacing: theme.spacingSmall
             clip: true
             model: typeof weatherViewModel !== "undefined" ? weatherViewModel.pastWeatherList : []
 
@@ -34,7 +37,8 @@ Item {
         NavigationButton {
             direction: "right"
             onClicked: {
-                if (stackView) stackView.pop()
+                mainWindow.navGoingLeft = true
+                stackView.pop()
             }
         }
     }

@@ -21,10 +21,32 @@ void TencentApiClient::fetchLocation() {
         QJsonObject result = root["result"].toObject();
         QJsonObject adInfo = result["ad_info"].toObject();
 
-        int adcode = adInfo["adcode"].toInt();
+        int rawAdcode = adInfo["adcode"].toInt();
         QString city = adInfo["city"].toString();
+        QString district = adInfo["district"].toString();
 
-        emit locationFetched(adcode, city);
+        // 归一化到市级 adcode
+        // 直辖市(11/12/31/50)：区县级 adcode → 省级(XX0000)
+        // 其他城市：区县级 adcode → 市级(XXYY00)
+        int prefix = rawAdcode / 10000;
+        int cityAdcode;
+        if (prefix == 11 || prefix == 12 || prefix == 31 || prefix == 50) {
+            cityAdcode = prefix * 10000;
+        } else {
+            cityAdcode = (rawAdcode / 100) * 100;
+        }
+
+        // 如果 city 为空（某些 IP 只解析到区），用 district 作为城市名
+        if (city.isEmpty() && !district.isEmpty()) {
+            city = district;
+        }
+
+        qDebug() << "[TencentApiClient] Location normalized:"
+                 << "raw adcode:" << rawAdcode
+                 << "→ city adcode:" << cityAdcode
+                 << "city:" << city;
+
+        emit locationFetched(cityAdcode, city);
     }, [this](const QString& err) {
         emit apiErrorOccurred("Location API", err);
     });

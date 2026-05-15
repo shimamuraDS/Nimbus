@@ -5,6 +5,9 @@ import "../components"
 
 Item {
     id: root
+
+    Theme { id: theme }
+
     objectName: "SettingsView"
 
     TimePicker {
@@ -18,38 +21,52 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 20
-        spacing: 15
+        anchors.margins: theme.spacingLarge
+        spacing: theme.spacingMedium
 
-        // 1. 定位设置模块
+        // ── 1. Location settings ──
         RowLayout {
             Layout.fillWidth: true
-            spacing: 10
+            spacing: theme.spacingSmall
+
+            // ── Auto-location mode ──
+            Text {
+                visible: typeof settingsViewModel !== "undefined" && settingsViewModel.isAutoLocation
+                text: typeof settingsViewModel !== "undefined"
+                    ? qsTr("自动定位：【") + (typeof weatherViewModel !== "undefined" ? weatherViewModel.currentCity : "") + qsTr("】")
+                    : ""
+                font: theme.bodyFont
+                color: theme.primaryText
+            }
 
             Text {
-                id: locationText
-                text: {
-                    if (typeof settingsViewModel === "undefined") return ""
-                    return settingsViewModel.isAutoLocation
-                        ? qsTr("自动定位：【") + (typeof weatherViewModel !== "undefined" ? weatherViewModel.currentCity : "") + qsTr("】？定位不准？")
-                        : qsTr("手动定位：【选择城市】手动定位")
+                visible: typeof settingsViewModel !== "undefined" && settingsViewModel.isAutoLocation
+                text: qsTr("定位不准？")
+                font {
+                    family: theme.bodyFont.family
+                    pointSize: theme.bodyFont.pointSize
+                    weight: theme.bodyFont.weight
+                    underline: true
                 }
-                font.pixelSize: 14
-                color: "#0066cc"
-                font.underline: true
+                color: theme.accent
 
                 MouseArea {
                     anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         if (typeof settingsViewModel !== "undefined") {
-                            if (settingsViewModel.isAutoLocation) {
-                                settingsViewModel.setAutoLocation(false)
-                            } else {
-                                settingsViewModel.setAutoLocation(true)
-                            }
+                            settingsViewModel.setAutoLocation(false)
                         }
                     }
                 }
+            }
+
+            // ── Manual mode ──
+            Text {
+                visible: typeof settingsViewModel !== "undefined" && !settingsViewModel.isAutoLocation
+                text: qsTr("选择城市：")
+                font: theme.bodyFont
+                color: theme.primaryText
             }
 
             CitySelector {
@@ -60,16 +77,41 @@ Item {
                     }
                 }
             }
+
+            Text {
+                visible: typeof settingsViewModel !== "undefined" && !settingsViewModel.isAutoLocation
+                text: qsTr("返回自动定位")
+                font {
+                    family: theme.bodyFont.family
+                    pointSize: theme.bodyFont.pointSize
+                    weight: theme.bodyFont.weight
+                    underline: true
+                }
+                color: theme.accent
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        if (typeof settingsViewModel !== "undefined") {
+                            settingsViewModel.setAutoLocation(true)
+                        }
+                    }
+                }
+            }
         }
 
-        Rectangle { height: 1; color: "#bdc3c7"; Layout.fillWidth: true }
+        Rectangle {
+            Layout.fillWidth: true
+            height: 1
+            color: theme.divider
+        }
 
-        // 2. 提醒时间设置模块
+        // ── 2. Alert time list ──
         Text {
             text: qsTr("设置提醒时间：")
-            font.pixelSize: 14
-            font.bold: true
-            color: "#2c3e50"
+            font: theme.subtitleFont
+            color: theme.primaryText
         }
 
         ListView {
@@ -77,22 +119,39 @@ Item {
             Layout.fillHeight: true
             clip: true
             model: typeof settingsViewModel !== "undefined" ? settingsViewModel.alertTimeList : []
-            spacing: 5
+            spacing: theme.spacingTiny
 
             delegate: RowLayout {
                 width: parent ? parent.width : 200
 
                 Text {
                     text: modelData
-                    font.pixelSize: 16
-                    color: "#2c3e50"
+                    font: theme.bodyFont
+                    color: theme.primaryText
                     Layout.alignment: Qt.AlignVCenter
                 }
 
                 Item { Layout.fillWidth: true }
 
                 Button {
-                    text: qsTr("【删除时间点】")
+                    text: qsTr("删除")
+                    font: theme.captionFont
+                    flat: true
+
+                    contentItem: Text {
+                        text: qsTr("删除")
+                        font: theme.captionFont
+                        color: theme.dangerText
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    background: Rectangle {
+                        radius: theme.radiusSmall
+                        color: parent.hovered ? theme.cardBgHover : "transparent"
+                        Behavior on color { ColorAnimation { duration: 150 } }
+                    }
+
                     onClicked: {
                         if (typeof settingsViewModel !== "undefined") {
                             settingsViewModel.removeAlertTime(modelData)
@@ -102,10 +161,27 @@ Item {
             }
         }
 
-        // 底部常驻添加按钮
+        // ── Add button ──
         Button {
-            text: qsTr("【添加时间点】")
+            text: qsTr("添加时间点")
             Layout.alignment: Qt.AlignHCenter
+            font: theme.bodyFont
+
+            contentItem: Text {
+                text: qsTr("添加时间点")
+                font: theme.bodyFont
+                color: theme.primaryText
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+
+            background: Rectangle {
+                radius: theme.radiusSmall
+                color: parent.hovered ? theme.cardBgHover : theme.cardBg
+                border.color: theme.cardBorder
+                Behavior on color { ColorAnimation { duration: 150 } }
+            }
+
             onClicked: timePicker.open()
         }
     }

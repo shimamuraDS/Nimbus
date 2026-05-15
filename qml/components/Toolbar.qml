@@ -4,8 +4,11 @@ import QtQuick.Layouts
 
 Rectangle {
     id: root
+
+    Theme { id: theme }
+
     height: toolbarLayout.height
-    color: "#2c3e50"
+    color: "transparent"
 
     property bool isSettingsPage: false
 
@@ -19,15 +22,14 @@ Rectangle {
 
         RowLayout {
             Layout.fillWidth: true
-            Layout.leftMargin: 15
-            Layout.rightMargin: 10
-            Layout.preferredHeight: 40
+            Layout.leftMargin: theme.spacingLarge
+            Layout.rightMargin: theme.spacingMedium
+            Layout.preferredHeight: 44
 
             Text {
                 text: qsTr("天气提醒助手")
-                font.pixelSize: 16
-                font.bold: true
-                color: "#ecf0f1"
+                font: theme.titleFont
+                color: theme.primaryText
                 Layout.alignment: Qt.AlignVCenter
             }
 
@@ -36,20 +38,21 @@ Rectangle {
             Button {
                 id: actionBtn
                 text: root.isSettingsPage ? qsTr("返回") : qsTr("设置")
-                font.pixelSize: 14
+                font: theme.bodyFont
                 flat: true
 
                 contentItem: Text {
                     text: actionBtn.text
                     font: actionBtn.font
-                    color: "#ecf0f1"
+                    color: theme.primaryText
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                 }
 
                 background: Rectangle {
-                    radius: 4
-                    color: actionBtn.hovered ? "#34495e" : "transparent"
+                    radius: theme.radiusSmall
+                    color: actionBtn.hovered ? theme.cardBgHover : "transparent"
+                    Behavior on color { ColorAnimation { duration: 150 } }
                 }
 
                 onClicked: {
@@ -62,18 +65,20 @@ Rectangle {
             }
         }
 
-        // 离线提示横幅
+        // ── Offline warning banner ──
         Rectangle {
             Layout.fillWidth: true
-            height: visible ? 22 : 0
-            color: "#e74c3c"
+            height: visible ? 24 : 0
+            color: theme.dangerBg
             visible: typeof weatherViewModel !== "undefined" && weatherViewModel.isOffline
+
+            Behavior on height { NumberAnimation { duration: 200 } }
 
             Text {
                 anchors.centerIn: parent
                 text: qsTr("⚠ 网络连接异常，正在显示缓存数据")
-                font.pixelSize: 11
-                color: "#ffffff"
+                font: theme.captionFont
+                color: theme.primaryText
             }
         }
     }

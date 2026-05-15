@@ -5,6 +5,9 @@ import "../components"
 
 Item {
     id: root
+
+    Theme { id: theme }
+
     objectName: "TodayView"
 
     function vm() {
@@ -19,13 +22,14 @@ Item {
 
     RowLayout {
         anchors.fill: parent
-        anchors.margins: 10
-        spacing: 15
+        anchors.margins: theme.spacingMedium
+        spacing: theme.spacingMedium
 
         NavigationButton {
             direction: "left"
             onClicked: {
-                if (stackView) stackView.push(pastViewComponent)
+                mainWindow.navGoingLeft = true
+                stackView.push(pastViewComponent)
             }
         }
 
@@ -47,7 +51,8 @@ Item {
         NavigationButton {
             direction: "right"
             onClicked: {
-                if (stackView) stackView.push(futureViewComponent)
+                mainWindow.navGoingLeft = false
+                stackView.push(futureViewComponent)
             }
         }
     }

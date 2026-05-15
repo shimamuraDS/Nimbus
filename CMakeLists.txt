@@ -54,6 +54,7 @@ qt_add_qml_module(WeatherApp
     VERSION 1.0
     QML_FILES
         qml/MainWindow.qml
+        qml/components/Theme.qml
         qml/components/Toolbar.qml
         qml/components/WeatherCard.qml
         qml/components/NavigationButton.qml
