@@ -1,6 +1,7 @@
 #include "WeatherViewModel.h"
 #include "../data/WeatherCacheManager.h"
 #include "../util/Config.h"
+#include <QDate>
 #include <QDebug>
 
 namespace ViewModel {
@@ -140,14 +141,18 @@ void WeatherViewModel::loadFromCache() {
         }
     }
 
-    // 加载逐小时数据
+    // 加载逐小时数据（只保留今天的数据）
+    QString todayStr = QDate::currentDate().toString("yyyy-MM-dd");
     QJsonArray hourlyData = cache.getHourlyData();
     for (const QJsonValue& val : hourlyData) {
         QJsonObject obj = val.toObject();
         QString hourStr = obj["hour"].toString();       // "2026-05-15 14:00"
+
+        if (!hourStr.startsWith(todayStr))
+            continue;
+
         QJsonObject info = obj["info"].toObject();
 
-        // 只取时间 HH:00 部分，只保留未来24小时内的数据
         QString time = hourStr.length() >= 16 ? hourStr.mid(11, 5) : hourStr;
 
         QVariantMap map;
