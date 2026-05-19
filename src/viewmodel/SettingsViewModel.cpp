@@ -47,4 +47,9 @@ void SettingsViewModel::removeAlertTime(const QString& time) {
     emit alertTimeListChanged();
 }
 
+void SettingsViewModel::updateAlertTime(const QString& oldTime, const QString& newTime) {
+    Util::Config::getInstance().updateAlertTime(oldTime, newTime);
+    emit alertTimeListChanged();
+}
+
 } // namespace ViewModel

@@ -24,6 +24,7 @@ Item {
         NavigationButton {
             direction: "left"
             onClicked: {
+                mainWindow.navIsSettings = false
                 mainWindow.navGoingLeft = true
                 stackView.push(pastViewComponent)
             }
@@ -60,6 +61,7 @@ Item {
         NavigationButton {
             direction: "right"
             onClicked: {
+                mainWindow.navIsSettings = false
                 mainWindow.navGoingLeft = false
                 stackView.push(futureViewComponent)
             }

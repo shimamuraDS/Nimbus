@@ -74,7 +74,8 @@ Item {
                     }
                     direction: "right"
                     onClicked: {
-                        mainWindow.navGoingLeft = true
+                        mainWindow.navIsSettings = false
+                        mainWindow.navGoingLeft = false
                         stackView.pop()
                     }
                 }

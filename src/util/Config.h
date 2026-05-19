@@ -32,6 +32,7 @@ public:
     void setAlertTimes(const QStringList& times);
     void addAlertTime(const QString& time);
     void removeAlertTime(const QString& time);
+    void updateAlertTime(const QString& oldTime, const QString& newTime);
 
 private:
     Config();

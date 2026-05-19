@@ -24,6 +24,7 @@ public:
     Q_INVOKABLE void setManualCity(int adcode, const QString& name);
     Q_INVOKABLE void addAlertTime(const QString& time);
     Q_INVOKABLE void removeAlertTime(const QString& time);
+    Q_INVOKABLE void updateAlertTime(const QString& oldTime, const QString& newTime);
 
 signals:
     void settingsChanged();

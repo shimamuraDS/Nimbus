@@ -9,17 +9,19 @@ class tst_AlertCondition : public QObject {
 
 private slots:
     void testSevereWeatherKeywords() {
+        // 晴天不触发提醒
+        QVERIFY(!Util::WeatherCode::isSevereWeather(QString::fromUtf8("晴")));
+
+        // 晴以外所有天气都触发提醒
+        QVERIFY(Util::WeatherCode::isSevereWeather(QString::fromUtf8("多云")));
+        QVERIFY(Util::WeatherCode::isSevereWeather(QString::fromUtf8("阴")));
+        QVERIFY(Util::WeatherCode::isSevereWeather(QString::fromUtf8("小雨")));
         QVERIFY(Util::WeatherCode::isSevereWeather(QString::fromUtf8("暴雨")));
         QVERIFY(Util::WeatherCode::isSevereWeather(QString::fromUtf8("特大暴雨")));
+        QVERIFY(Util::WeatherCode::isSevereWeather(QString::fromUtf8("暴雪")));
         QVERIFY(Util::WeatherCode::isSevereWeather(QString::fromUtf8("雷阵雨伴有冰雹")));
         QVERIFY(Util::WeatherCode::isSevereWeather(QString::fromUtf8("沙尘暴")));
         QVERIFY(Util::WeatherCode::isSevereWeather(QString::fromUtf8("冻雨")));
-        QVERIFY(Util::WeatherCode::isSevereWeather(QString::fromUtf8("暴雪")));
-
-        QVERIFY(!Util::WeatherCode::isSevereWeather(QString::fromUtf8("晴")));
-        QVERIFY(!Util::WeatherCode::isSevereWeather(QString::fromUtf8("多云")));
-        QVERIFY(!Util::WeatherCode::isSevereWeather(QString::fromUtf8("小雨")));
-        QVERIFY(!Util::WeatherCode::isSevereWeather(QString::fromUtf8("阴")));
     }
 
     void testTimeFormat() {

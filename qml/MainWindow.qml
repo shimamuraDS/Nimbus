@@ -9,7 +9,7 @@ Window {
     id: mainWindow
 
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool
-    title: qsTr("天气提醒助手")
+    title: qsTr("天气提醒")
     color: "transparent"
 
     property real scrX: typeof primaryScreen !== "undefined" ? primaryScreen.x : 0

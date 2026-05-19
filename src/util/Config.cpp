@@ -82,4 +82,14 @@ void Config::removeAlertTime(const QString& time) {
     }
 }
 
+void Config::updateAlertTime(const QString& oldTime, const QString& newTime) {
+    QStringList times = getAlertTimes();
+    int idx = times.indexOf(oldTime);
+    if (idx >= 0 && oldTime != newTime && !times.contains(newTime)) {
+        times[idx] = newTime;
+        times.sort();
+        setAlertTimes(times);
+    }
+}
+
 } // namespace Util

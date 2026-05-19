@@ -10,9 +10,6 @@ class WeatherCode {
 public:
     static QString getIconByWeather(const QString& weatherStr);
     static bool isSevereWeather(const QString& weatherStr);
-
-private:
-    static const QStringList m_severeKeywords;
 };
 
 } // namespace Util

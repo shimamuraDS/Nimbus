@@ -59,7 +59,6 @@ qt_add_qml_module(WeatherApp
         qml/components/WeatherCard.qml
         qml/components/HourlyCard.qml
         qml/components/NavigationButton.qml
-        qml/components/TimePicker.qml
         qml/components/CitySelector.qml
         qml/views/TodayView.qml
         qml/views/PastView.qml

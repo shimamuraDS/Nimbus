@@ -2,22 +2,6 @@
 
 namespace Util {
 
-const QStringList WeatherCode::m_severeKeywords = {
-    QString::fromUtf8("冰雹"),
-    QString::fromUtf8("暴雨"),
-    QString::fromUtf8("大暴雨"),
-    QString::fromUtf8("特大暴雨"),
-    QString::fromUtf8("大到暴雨"),
-    QString::fromUtf8("暴雨到大暴雨"),
-    QString::fromUtf8("大暴雨到特大暴雨"),
-    QString::fromUtf8("暴雪"),
-    QString::fromUtf8("大到暴雪"),
-    QString::fromUtf8("冻雨"),
-    QString::fromUtf8("沙尘暴"),
-    QString::fromUtf8("强沙尘暴"),
-    QString::fromUtf8("严重霾"),
-    QString::fromUtf8("特强浓雾")
-};
 
 QString WeatherCode::getIconByWeather(const QString& weatherStr) {
     const QString basePath = "qrc:/resources/icons/weather/";
@@ -44,12 +28,8 @@ QString WeatherCode::getIconByWeather(const QString& weatherStr) {
 }
 
 bool WeatherCode::isSevereWeather(const QString& weatherStr) {
-    for (const QString& keyword : m_severeKeywords) {
-        if (weatherStr.contains(keyword)) {
-            return true;
-        }
-    }
-    return false;
+    // 除晴天以外所有天气都触发提醒
+    return !weatherStr.contains(QString::fromUtf8("晴"));
 }
 
 } // namespace Util

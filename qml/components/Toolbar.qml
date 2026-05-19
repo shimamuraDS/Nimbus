@@ -63,6 +63,35 @@ Rectangle {
                     }
                 }
             }
+
+            Button {
+                id: minimizeBtn
+                text: qsTr("−")
+                font: theme.titleFont
+                flat: true
+                Layout.preferredWidth: 36
+                Layout.preferredHeight: 28
+
+                contentItem: Text {
+                    text: minimizeBtn.text
+                    font: minimizeBtn.font
+                    color: theme.primaryText
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                background: Rectangle {
+                    radius: theme.radiusSmall
+                    color: minimizeBtn.hovered ? theme.cardBgHover : "transparent"
+                    Behavior on color { ColorAnimation { duration: 150 } }
+                }
+
+                onClicked: {
+                    if (typeof trayViewModel !== "undefined") {
+                        trayViewModel.hideWindow()
+                    }
+                }
+            }
         }
 
         // ── Offline warning banner ──

@@ -10,14 +10,32 @@ Item {
 
     objectName: "SettingsView"
 
-    TimePicker {
-        id: timePicker
-        onTimeSelected: function(timeHHmm) {
-            if (typeof settingsViewModel !== "undefined") {
-                settingsViewModel.addAlertTime(timeHHmm)
-            }
+    // 生成小时选项 00 ~ 23
+    function generateHourOptions() {
+        var options = []
+        for (var h = 0; h < 24; h++) {
+            options.push(h.toString().padStart(2, '0'))
         }
+        return options
     }
+
+    // 生成分钟选项 00 ~ 59
+    function generateMinuteOptions() {
+        var options = []
+        for (var m = 0; m < 60; m++) {
+            options.push(m.toString().padStart(2, '0'))
+        }
+        return options
+    }
+
+    // 获取当前选中的时间字符串 HH:mm
+    function selectedTime() {
+        return hourCombo.currentText + ":" + minCombo.currentText
+    }
+
+    // 修改状态
+    property int modifyingIndex: -1
+    property string modifyingOldTime: ""
 
     ColumnLayout {
         anchors.fill: parent
@@ -134,6 +152,31 @@ Item {
                 Item { Layout.fillWidth: true }
 
                 Button {
+                    text: qsTr("修改")
+                    font: theme.captionFont
+                    flat: true
+
+                    contentItem: Text {
+                        text: qsTr("修改")
+                        font: theme.captionFont
+                        color: theme.accent
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    background: Rectangle {
+                        radius: theme.radiusSmall
+                        color: parent.hovered ? theme.cardBgHover : "transparent"
+                        Behavior on color { ColorAnimation { duration: 150 } }
+                    }
+
+                    onClicked: {
+                        root.modifyingIndex = index
+                        root.modifyingOldTime = modelData
+                    }
+                }
+
+                Button {
                     text: qsTr("删除")
                     font: theme.captionFont
                     flat: true
@@ -161,28 +204,191 @@ Item {
             }
         }
 
-        // ── Add button ──
-        Button {
-            text: qsTr("添加时间点")
+        // ── Add / Modify section ──
+        RowLayout {
             Layout.alignment: Qt.AlignHCenter
-            font: theme.bodyFont
+            spacing: theme.spacingSmall
 
-            contentItem: Text {
-                text: qsTr("添加时间点")
+            ComboBox {
+                id: hourCombo
+                model: generateHourOptions()
                 font: theme.bodyFont
+                flat: true
+                implicitWidth: 80
+
+                contentItem: Text {
+                    text: hourCombo.currentText
+                    font: theme.bodyFont
+                    color: theme.primaryText
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                background: Rectangle {
+                    radius: theme.radiusSmall
+                    color: theme.cardBg
+                    border.color: theme.cardBorder
+                }
+
+                popup: Popup {
+                    y: hourCombo.height
+                    width: hourCombo.width
+                    implicitHeight: contentItem.implicitHeight
+                    padding: 1
+
+                    contentItem: ListView {
+                        clip: true
+                        implicitHeight: 300
+                        model: hourCombo.popup.visible ? hourCombo.delegateModel : null
+                        currentIndex: hourCombo.highlightedIndex
+                        ScrollIndicator.vertical: ScrollIndicator {}
+                    }
+
+                    background: Rectangle {
+                        radius: theme.radiusSmall
+                        color: "#1e1e30"
+                        border.color: theme.cardBorder
+                    }
+                }
+
+                delegate: ItemDelegate {
+                    width: hourCombo.width
+                    contentItem: Text {
+                        text: modelData
+                        font: theme.bodyFont
+                        color: highlighted ? theme.accent : theme.primaryText
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    highlighted: hourCombo.highlightedIndex === index
+                    background: Rectangle {
+                        color: highlighted ? "#2a2a45" : "transparent"
+                    }
+                }
+            }
+
+            Text {
+                text: ":"
+                font.pixelSize: 22
+                font.bold: true
                 color: theme.primaryText
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
             }
 
-            background: Rectangle {
-                radius: theme.radiusSmall
-                color: parent.hovered ? theme.cardBgHover : theme.cardBg
-                border.color: theme.cardBorder
-                Behavior on color { ColorAnimation { duration: 150 } }
+            ComboBox {
+                id: minCombo
+                model: generateMinuteOptions()
+                font: theme.bodyFont
+                flat: true
+                implicitWidth: 80
+                currentIndex: 0
+
+                contentItem: Text {
+                    text: minCombo.currentText
+                    font: theme.bodyFont
+                    color: theme.primaryText
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                background: Rectangle {
+                    radius: theme.radiusSmall
+                    color: theme.cardBg
+                    border.color: theme.cardBorder
+                }
+
+                popup: Popup {
+                    y: minCombo.height
+                    width: minCombo.width
+                    implicitHeight: contentItem.implicitHeight
+                    padding: 1
+
+                    contentItem: ListView {
+                        clip: true
+                        implicitHeight: 300
+                        model: minCombo.popup.visible ? minCombo.delegateModel : null
+                        currentIndex: minCombo.highlightedIndex
+                        ScrollIndicator.vertical: ScrollIndicator {}
+                    }
+
+                    background: Rectangle {
+                        radius: theme.radiusSmall
+                        color: "#1e1e30"
+                        border.color: theme.cardBorder
+                    }
+                }
+
+                delegate: ItemDelegate {
+                    width: minCombo.width
+                    contentItem: Text {
+                        text: modelData
+                        font: theme.bodyFont
+                        color: highlighted ? theme.accent : theme.primaryText
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    highlighted: minCombo.highlightedIndex === index
+                    background: Rectangle {
+                        color: highlighted ? "#2a2a45" : "transparent"
+                    }
+                }
             }
 
-            onClicked: timePicker.open()
+            Button {
+                id: addModifyBtn
+                text: root.modifyingIndex >= 0 ? qsTr("确认修改") : qsTr("添加")
+                font: theme.bodyFont
+                flat: true
+
+                contentItem: Text {
+                    text: addModifyBtn.text
+                    font: theme.bodyFont
+                    color: theme.accent
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                background: Rectangle {
+                    radius: theme.radiusSmall
+                    color: parent.hovered ? theme.cardBgHover : theme.cardBg
+                    border.color: theme.cardBorder
+                    Behavior on color { ColorAnimation { duration: 150 } }
+                }
+
+                onClicked: {
+                    if (typeof settingsViewModel === "undefined") return
+
+                    var newTime = root.selectedTime()
+                    if (root.modifyingIndex >= 0) {
+                        settingsViewModel.updateAlertTime(root.modifyingOldTime, newTime)
+                        root.modifyingIndex = -1
+                    } else {
+                        settingsViewModel.addAlertTime(newTime)
+                    }
+                }
+            }
+
+            Button {
+                visible: root.modifyingIndex >= 0
+                text: qsTr("取消")
+                font: theme.bodyFont
+                flat: true
+
+                contentItem: Text {
+                    text: qsTr("取消")
+                    font: theme.bodyFont
+                    color: theme.secondaryText
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                background: Rectangle {
+                    radius: theme.radiusSmall
+                    color: parent.hovered ? theme.cardBgHover : "transparent"
+                    Behavior on color { ColorAnimation { duration: 150 } }
+                }
+
+                onClicked: root.modifyingIndex = -1
+            }
         }
     }
 }
