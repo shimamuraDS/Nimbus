@@ -106,13 +106,17 @@ Rectangle {
                         sourceSize.height: 26
                         anchors.centerIn: parent
 
+                        transform: Translate { id: dayFloatTransform }
+
                         SequentialAnimation {
                             id: dayFloatAnim
+                            target: dayFloatTransform
+                            property: "y"
                             running: hoverArea.containsMouse
                             loops: Animation.Infinite
-                            NumberAnimation { target: dayIcon; property: "y"; from: 0; to: -2; duration: 1200; easing.type: Easing.InOutQuad }
-                            NumberAnimation { target: dayIcon; property: "y"; from: -2; to: 0; duration: 1200; easing.type: Easing.InOutQuad }
-                            onStopped: dayIcon.y = 0
+                            NumberAnimation { from: 0; to: -2; duration: 1200; easing.type: Easing.InOutQuad }
+                            NumberAnimation { from: -2; to: 0; duration: 1200; easing.type: Easing.InOutQuad }
+                            onStopped: dayFloatTransform.y = 0
                         }
                     }
                 }
@@ -140,13 +144,17 @@ Rectangle {
                         sourceSize.height: 26
                         anchors.centerIn: parent
 
+                        transform: Translate { id: nightFloatTransform }
+
                         SequentialAnimation {
                             id: nightFloatAnim
+                            target: nightFloatTransform
+                            property: "y"
                             running: hoverArea.containsMouse
                             loops: Animation.Infinite
-                            NumberAnimation { target: nightIcon; property: "y"; from: 0; to: -2; duration: 1200; easing.type: Easing.InOutQuad }
-                            NumberAnimation { target: nightIcon; property: "y"; from: -2; to: 0; duration: 1200; easing.type: Easing.InOutQuad }
-                            onStopped: nightIcon.y = 0
+                            NumberAnimation { from: 0; to: -2; duration: 1200; easing.type: Easing.InOutQuad }
+                            NumberAnimation { from: -2; to: 0; duration: 1200; easing.type: Easing.InOutQuad }
+                            onStopped: nightFloatTransform.y = 0
                         }
                     }
                 }

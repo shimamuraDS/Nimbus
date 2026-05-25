@@ -81,13 +81,19 @@ Rectangle {
             sourceSize.height: 28
             Layout.alignment: Qt.AlignHCenter
 
+            transform: Translate {
+                id: floatTransform
+            }
+
             SequentialAnimation {
                 id: floatAnim
+                target: floatTransform
+                property: "y"
                 running: isNow || hoverArea.containsMouse
                 loops: Animation.Infinite
-                NumberAnimation { target: weatherImg; property: "y"; from: 0; to: -2; duration: 1200; easing.type: Easing.InOutQuad }
-                NumberAnimation { target: weatherImg; property: "y"; from: -2; to: 0; duration: 1200; easing.type: Easing.InOutQuad }
-                onStopped: weatherImg.y = 0
+                NumberAnimation { from: 0; to: -2; duration: 1200; easing.type: Easing.InOutQuad }
+                NumberAnimation { from: -2; to: 0; duration: 1200; easing.type: Easing.InOutQuad }
+                onStopped: floatTransform.y = 0
             }
         }
 
