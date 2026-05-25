@@ -92,69 +92,69 @@ Window {
 
             pushEnter: Transition {
                 ParallelAnimation {
-                    NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 300; easing.type: Easing.OutQuint }
+                    NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 200; easing.type: Easing.OutCubic }
                     NumberAnimation {
                         property: "x"
                         from: mainWindow.navIsSettings ? 0 : (mainWindow.navGoingLeft ? -50 : 50)
                         to: 0
-                        duration: 300; easing.type: Easing.OutQuint
+                        duration: 200; easing.type: Easing.OutCubic
                     }
                     NumberAnimation {
                         property: "y"
                         from: mainWindow.navIsSettings ? -30 : 0
                         to: 0
-                        duration: 300; easing.type: Easing.OutQuint
+                        duration: 200; easing.type: Easing.OutCubic
                     }
                 }
             }
             pushExit: Transition {
                 ParallelAnimation {
-                    NumberAnimation { property: "opacity"; from: 1; to: 0; duration: 250; easing.type: Easing.InQuint }
+                    NumberAnimation { property: "opacity"; from: 1; to: 0; duration: 150; easing.type: Easing.InCubic }
                     NumberAnimation {
                         property: "x"
                         from: 0
                         to: mainWindow.navIsSettings ? 0 : (mainWindow.navGoingLeft ? 50 : -50)
-                        duration: 250; easing.type: Easing.InQuint
+                        duration: 150; easing.type: Easing.InCubic
                     }
                     NumberAnimation {
                         property: "y"
                         from: 0
                         to: mainWindow.navIsSettings ? 30 : 0
-                        duration: 250; easing.type: Easing.InQuint
+                        duration: 150; easing.type: Easing.InCubic
                     }
                 }
             }
             popEnter: Transition {
                 ParallelAnimation {
-                    NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 250; easing.type: Easing.OutQuint }
+                    NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 150; easing.type: Easing.OutCubic }
                     NumberAnimation {
                         property: "x"
                         from: mainWindow.navIsSettings ? 0 : (mainWindow.navGoingLeft ? -50 : 50)
                         to: 0
-                        duration: 250; easing.type: Easing.OutQuint
+                        duration: 150; easing.type: Easing.OutCubic
                     }
                     NumberAnimation {
                         property: "y"
                         from: mainWindow.navIsSettings ? -30 : 0
                         to: 0
-                        duration: 250; easing.type: Easing.OutQuint
+                        duration: 150; easing.type: Easing.OutCubic
                     }
                 }
             }
             popExit: Transition {
                 ParallelAnimation {
-                    NumberAnimation { property: "opacity"; from: 1; to: 0; duration: 300; easing.type: Easing.InQuint }
+                    NumberAnimation { property: "opacity"; from: 1; to: 0; duration: 200; easing.type: Easing.InCubic }
                     NumberAnimation {
                         property: "x"
                         from: 0
                         to: mainWindow.navIsSettings ? 0 : (mainWindow.navGoingLeft ? 50 : -50)
-                        duration: 300; easing.type: Easing.InQuint
+                        duration: 200; easing.type: Easing.InCubic
                     }
                     NumberAnimation {
                         property: "y"
                         from: 0
                         to: mainWindow.navIsSettings ? 30 : 0
-                        duration: 300; easing.type: Easing.InQuint
+                        duration: 200; easing.type: Easing.InCubic
                     }
                 }
             }
