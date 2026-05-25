@@ -100,20 +100,25 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     
                     Image {
+                        id: dayIcon
                         source: weatherIcon(dayWeather)
                         sourceSize.width: 26
                         sourceSize.height: 26
                         anchors.centerIn: parent
-                        
-                        SequentialAnimation on y {
+
+                        SequentialAnimation {
+                            id: dayFloatAnim
+                            target: dayIcon
+                            property: "y"
                             running: hoverArea.containsMouse
                             loops: Animation.Infinite
                             NumberAnimation { from: 0; to: -2; duration: 1200; easing.type: Easing.InOutQuad }
                             NumberAnimation { from: -2; to: 0; duration: 1200; easing.type: Easing.InOutQuad }
+                            onStopped: dayIcon.y = 0
                         }
                     }
                 }
-                
+
                 Text { text: qsTr("早: ") + dayWeather; font: theme.captionFont; color: theme.secondaryText }
                 Text { text: dayTemp + "°C"; font: theme.subtitleFont; color: theme.accentWarm }
                 Text { text: qsTr("湿度: ") + dayHumidity + "%"; font: theme.captionFont; color: theme.mutedText }
@@ -131,20 +136,25 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     
                     Image {
+                        id: nightIcon
                         source: weatherIcon(nightWeather)
                         sourceSize.width: 26
                         sourceSize.height: 26
                         anchors.centerIn: parent
-                        
-                        SequentialAnimation on y {
+
+                        SequentialAnimation {
+                            id: nightFloatAnim
+                            target: nightIcon
+                            property: "y"
                             running: hoverArea.containsMouse
                             loops: Animation.Infinite
                             NumberAnimation { from: 0; to: -2; duration: 1200; easing.type: Easing.InOutQuad }
                             NumberAnimation { from: -2; to: 0; duration: 1200; easing.type: Easing.InOutQuad }
+                            onStopped: nightIcon.y = 0
                         }
                     }
                 }
-                
+
                 Text { text: qsTr("晚: ") + nightWeather; font: theme.captionFont; color: theme.secondaryText }
                 Text { text: nightTemp + "°C"; font: theme.subtitleFont; color: theme.accent }
                 Text { text: qsTr("湿度: ") + nightHumidity + "%"; font: theme.captionFont; color: theme.mutedText }
