@@ -24,7 +24,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.leftMargin: theme.spacingLarge
             Layout.rightMargin: theme.spacingMedium
-            Layout.preferredHeight: 44
+            Layout.preferredHeight: 48
 
             Text {
                 text: qsTr("天气提醒助手")
@@ -37,9 +37,10 @@ Rectangle {
 
             Button {
                 id: actionBtn
-                text: root.isSettingsPage ? qsTr("返回") : qsTr("设置")
+                text: root.isSettingsPage ? qsTr("◀ 返回") : qsTr("⚙ 设置")
                 font: theme.bodyFont
                 flat: true
+                Layout.preferredHeight: 32
 
                 contentItem: Text {
                     text: actionBtn.text
@@ -47,12 +48,17 @@ Rectangle {
                     color: theme.primaryText
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
+                    leftPadding: 12
+                    rightPadding: 12
                 }
 
                 background: Rectangle {
                     radius: theme.radiusSmall
-                    color: actionBtn.hovered ? theme.cardBgHover : "transparent"
+                    color: actionBtn.pressed ? theme.cardBgHover : (actionBtn.hovered ? theme.cardBg : "transparent")
+                    border.color: actionBtn.hovered ? theme.cardBorder : "transparent"
+                    border.width: 1
                     Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on border.color { ColorAnimation { duration: 150 } }
                 }
 
                 onClicked: {
@@ -67,10 +73,11 @@ Rectangle {
             Button {
                 id: minimizeBtn
                 text: qsTr("−")
-                font: theme.titleFont
+                font: theme.subtitleFont
                 flat: true
-                Layout.preferredWidth: 36
-                Layout.preferredHeight: 28
+                Layout.preferredWidth: 32
+                Layout.preferredHeight: 32
+                Layout.alignment: Qt.AlignVCenter
 
                 contentItem: Text {
                     text: minimizeBtn.text
@@ -81,9 +88,12 @@ Rectangle {
                 }
 
                 background: Rectangle {
-                    radius: theme.radiusSmall
-                    color: minimizeBtn.hovered ? theme.cardBgHover : "transparent"
+                    radius: 16
+                    color: minimizeBtn.pressed ? theme.cardBgHover : (minimizeBtn.hovered ? theme.cardBg : "transparent")
+                    border.color: minimizeBtn.hovered ? theme.cardBorder : "transparent"
+                    border.width: 1
                     Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on border.color { ColorAnimation { duration: 150 } }
                 }
 
                 onClicked: {
@@ -94,20 +104,47 @@ Rectangle {
             }
         }
 
+        // Bottom divider for toolbar
+        Rectangle {
+            Layout.fillWidth: true
+            height: 1
+            color: theme.divider
+        }
+
         // ── Offline warning banner ──
         Rectangle {
             Layout.fillWidth: true
-            height: visible ? 24 : 0
+            height: visible ? 28 : 0
             color: theme.dangerBg
             visible: typeof weatherViewModel !== "undefined" && weatherViewModel.isOffline
+            clip: true
 
-            Behavior on height { NumberAnimation { duration: 200 } }
+            Behavior on height { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
 
-            Text {
+            RowLayout {
                 anchors.centerIn: parent
-                text: qsTr("⚠ 网络连接异常，正在显示缓存数据")
-                font: theme.captionFont
-                color: theme.primaryText
+                spacing: 6
+
+                Text {
+                    id: warningIcon
+                    text: "⚠"
+                    font: theme.bodyFont
+                    color: theme.dangerText
+                    transformOrigin: Item.Center
+
+                    SequentialAnimation on scale {
+                        loops: Animation.Infinite
+                        running: warningIcon.visible
+                        NumberAnimation { from: 1.0; to: 1.25; duration: 800; easing.type: Easing.InOutQuad }
+                        NumberAnimation { from: 1.25; to: 1.0; duration: 800; easing.type: Easing.InOutQuad }
+                    }
+                }
+
+                Text {
+                    text: qsTr("网络连接异常，正在显示缓存数据")
+                    font: theme.captionFont
+                    color: theme.dangerText
+                }
             }
         }
     }

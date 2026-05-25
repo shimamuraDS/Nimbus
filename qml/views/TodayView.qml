@@ -34,6 +34,8 @@ Item {
             id: flick
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.leftMargin: theme.spacingSmall
+            Layout.rightMargin: theme.spacingSmall
             contentWidth: row.width
             contentHeight: height
             clip: true

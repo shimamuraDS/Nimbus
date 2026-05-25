@@ -137,34 +137,48 @@ ComboBox {
         font: theme.bodyFont
         color: theme.primaryText
         verticalAlignment: Text.AlignVCenter
-        leftPadding: 10
+        leftPadding: 12
     }
 
     background: Rectangle {
         radius: theme.radiusSmall
-        color: theme.cardBg
-        border.color: theme.cardBorder
+        color: control.hovered ? theme.cardBgHover : theme.cardBg
+        border.color: control.pressed ? theme.accent : (control.hovered ? theme.cardBorderHover : theme.cardBorder)
+        border.width: 1
+        Behavior on color { ColorAnimation { duration: 150 } }
+        Behavior on border.color { ColorAnimation { duration: 150 } }
     }
 
     indicator: Text {
         text: "▾"
         font.pixelSize: 14
-        color: theme.secondaryText
+        color: control.opened ? theme.accent : theme.secondaryText
         anchors.right: parent.right
-        anchors.rightMargin: 10
+        anchors.rightMargin: 12
         anchors.verticalCenter: parent.verticalCenter
+        transformOrigin: Item.Center
+        rotation: control.opened ? 180 : 0
+        Behavior on rotation { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
+        Behavior on color { ColorAnimation { duration: 150 } }
     }
 
     delegate: ItemDelegate {
+        id: delegateItem
         width: control.width
+        height: 32
+        
         contentItem: Text {
             text: model.name
             font: theme.bodyFont
-            color: theme.primaryText
+            color: delegateItem.hovered ? theme.accent : theme.primaryText
             verticalAlignment: Text.AlignVCenter
+            leftPadding: 12
+            Behavior on color { ColorAnimation { duration: 120 } }
         }
+        
         background: Rectangle {
-            color: hovered ? theme.cardBgHover : theme.windowGradientTop
+            color: delegateItem.hovered ? theme.cardBgHover : "transparent"
+            Behavior on color { ColorAnimation { duration: 120 } }
         }
     }
 
@@ -172,20 +186,32 @@ ComboBox {
         y: control.height + 4
         width: Math.max(control.width, 160)
         padding: 4
-        implicitHeight: Math.min(contentItem.implicitHeight, 320)
+        implicitHeight: Math.min(contentItem.implicitHeight + 8, 280)
+
+        enter: Transition {
+            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 200; easing.type: Easing.OutQuad }
+            NumberAnimation { property: "y"; from: control.height - 5; to: control.height + 4; duration: 200; easing.type: Easing.OutQuad }
+        }
+
+        exit: Transition {
+            NumberAnimation { property: "opacity"; from: 1; to: 0; duration: 150; easing.type: Easing.OutQuad }
+        }
 
         contentItem: ListView {
             clip: true
-            implicitHeight: Math.min(contentHeight, 320)
+            implicitHeight: Math.min(contentHeight, 280)
             model: control.popup.visible ? control.delegateModel : null
             currentIndex: control.highlightedIndex
-            ScrollBar.vertical: ScrollBar {}
+            ScrollBar.vertical: ScrollBar {
+                policy: ScrollBar.AsNeeded
+            }
         }
 
         background: Rectangle {
-            radius: theme.radiusSmall
-            color: "#252536"
-            border.color: theme.cardBorder
+            radius: theme.radiusMedium
+            color: "#16162a"
+            border.color: theme.cardBorderHover
+            border.width: 1
         }
     }
 

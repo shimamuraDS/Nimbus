@@ -12,14 +12,17 @@ class SettingsViewModel : public QObject {
     Q_PROPERTY(bool isAutoLocation READ isAutoLocation NOTIFY settingsChanged)
     Q_PROPERTY(QString manualCityName READ manualCityName NOTIFY settingsChanged)
     Q_PROPERTY(QStringList alertTimeList READ alertTimeList NOTIFY alertTimeListChanged)
+    Q_PROPERTY(bool isAutoStart READ isAutoStart NOTIFY settingsChanged)
 
 public:
     explicit SettingsViewModel(Service::LocationService* locationService, QObject* parent = nullptr);
 
     bool isAutoLocation() const;
     QString manualCityName() const;
+    bool isAutoStart() const;
     QStringList alertTimeList() const;
 
+    Q_INVOKABLE void setAutoStart(bool autoStart);
     Q_INVOKABLE void setAutoLocation(bool isAuto);
     Q_INVOKABLE void setManualCity(int adcode, const QString& name);
     Q_INVOKABLE void addAlertTime(const QString& time);

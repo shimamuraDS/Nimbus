@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QStandardPaths>
 #include <QDir>
+#include <QDate>
 #include "data/WeatherCacheManager.h"
 
 class tst_HourlyMerge : public QObject {
@@ -14,10 +15,14 @@ private slots:
     void testAppendAndDedup() {
         auto& cache = Data::WeatherCacheManager::getInstance();
 
+        QString dateStr = QDate::currentDate().toString("yyyy-MM-dd");
+        QString hour1Str = dateStr + " 08:00";
+        QString hour2Str = dateStr + " 09:00";
+
         // 构造模拟逐小时数据
         QJsonArray hoursInfos;
         QJsonObject hour1;
-        hour1["hour"] = "2026-05-12 08:00";
+        hour1["hour"] = hour1Str;
         QJsonObject info1;
         info1["weather"] = QString::fromUtf8("晴");
         info1["temperature"] = 25;
@@ -27,7 +32,7 @@ private slots:
         hoursInfos.append(hour1);
 
         QJsonObject hour2;
-        hour2["hour"] = "2026-05-12 09:00";
+        hour2["hour"] = hour2Str;
         QJsonObject info2;
         info2["weather"] = QString::fromUtf8("多云");
         info2["temperature"] = 27;
@@ -45,7 +50,7 @@ private slots:
         // 测试去重：再次追加相同时间的数据（温度变化）
         QJsonArray updatedHours;
         QJsonObject updatedHour1;
-        updatedHour1["hour"] = "2026-05-12 08:00";
+        updatedHour1["hour"] = hour1Str;
         QJsonObject updatedInfo1;
         updatedInfo1["weather"] = QString::fromUtf8("晴");
         updatedInfo1["temperature"] = 28;
@@ -61,7 +66,7 @@ private slots:
         bool found = false;
         for (int i = 0; i < afterResult.size(); ++i) {
             QJsonObject obj = afterResult[i].toObject();
-            if (obj["hour"].toString() == "2026-05-12 08:00") {
+            if (obj["hour"].toString() == hour1Str) {
                 QCOMPARE(obj["info"].toObject()["temperature"].toInt(), 28);
                 found = true;
             }

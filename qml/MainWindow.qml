@@ -51,8 +51,18 @@ Window {
             GradientStop { position: 0.0; color: theme.windowGradientTop }
             GradientStop { position: 1.0; color: theme.windowGradientBottom }
         }
-        border.color: Qt.rgba(1, 1, 1, 0.06)
+        border.color: Qt.rgba(1, 1, 1, 0.12)
         border.width: 1
+
+        // Subtle inner glow border
+        Rectangle {
+            anchors.fill: parent
+            anchors.margins: 1
+            radius: parent.radius - 1
+            color: "transparent"
+            border.color: Qt.rgba(1, 1, 1, 0.04)
+            border.width: 1
+        }
     }
 
     ColumnLayout {
@@ -81,73 +91,73 @@ Window {
             clip: true
 
             pushEnter: Transition {
-            ParallelAnimation {
-                PropertyAnimation { property: "opacity"; from: 0; to: 1; duration: 220 }
-                PropertyAnimation {
-                    property: "x"
-                    from: mainWindow.navIsSettings ? 0 : (mainWindow.navGoingLeft ? -40 : 40)
-                    to: 0
-                    duration: 220; easing.type: Easing.OutCubic
-                }
-                PropertyAnimation {
-                    property: "y"
-                    from: mainWindow.navIsSettings ? -40 : 0
-                    to: 0
-                    duration: 220; easing.type: Easing.OutCubic
-                }
-            }
-        }
-        pushExit: Transition {
-            ParallelAnimation {
-                PropertyAnimation { property: "opacity"; from: 1; to: 0; duration: 180 }
-                PropertyAnimation {
-                    property: "x"
-                    from: 0
-                    to: mainWindow.navIsSettings ? 0 : (mainWindow.navGoingLeft ? 40 : -40)
-                    duration: 180; easing.type: Easing.InCubic
-                }
-                PropertyAnimation {
-                    property: "y"
-                    from: 0
-                    to: mainWindow.navIsSettings ? 40 : 0
-                    duration: 180; easing.type: Easing.InCubic
+                ParallelAnimation {
+                    NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 300; easing.type: Easing.OutQuint }
+                    NumberAnimation {
+                        property: "x"
+                        from: mainWindow.navIsSettings ? 0 : (mainWindow.navGoingLeft ? -50 : 50)
+                        to: 0
+                        duration: 300; easing.type: Easing.OutQuint
+                    }
+                    NumberAnimation {
+                        property: "y"
+                        from: mainWindow.navIsSettings ? -30 : 0
+                        to: 0
+                        duration: 300; easing.type: Easing.OutQuint
+                    }
                 }
             }
-        }
-        popEnter: Transition {
-            ParallelAnimation {
-                PropertyAnimation { property: "opacity"; from: 0; to: 1; duration: 180 }
-                PropertyAnimation {
-                    property: "x"
-                    from: mainWindow.navIsSettings ? 0 : (mainWindow.navGoingLeft ? -40 : 40)
-                    to: 0
-                    duration: 180; easing.type: Easing.OutCubic
-                }
-                PropertyAnimation {
-                    property: "y"
-                    from: mainWindow.navIsSettings ? -40 : 0
-                    to: 0
-                    duration: 180; easing.type: Easing.OutCubic
-                }
-            }
-        }
-        popExit: Transition {
-            ParallelAnimation {
-                PropertyAnimation { property: "opacity"; from: 1; to: 0; duration: 220 }
-                PropertyAnimation {
-                    property: "x"
-                    from: 0
-                    to: mainWindow.navIsSettings ? 0 : (mainWindow.navGoingLeft ? -40 : 40)
-                    duration: 220; easing.type: Easing.InCubic
-                }
-                PropertyAnimation {
-                    property: "y"
-                    from: 0
-                    to: mainWindow.navIsSettings ? -40 : 0
-                    duration: 220; easing.type: Easing.InCubic
+            pushExit: Transition {
+                ParallelAnimation {
+                    NumberAnimation { property: "opacity"; from: 1; to: 0; duration: 250; easing.type: Easing.InQuint }
+                    NumberAnimation {
+                        property: "x"
+                        from: 0
+                        to: mainWindow.navIsSettings ? 0 : (mainWindow.navGoingLeft ? 50 : -50)
+                        duration: 250; easing.type: Easing.InQuint
+                    }
+                    NumberAnimation {
+                        property: "y"
+                        from: 0
+                        to: mainWindow.navIsSettings ? 30 : 0
+                        duration: 250; easing.type: Easing.InQuint
+                    }
                 }
             }
-        }
+            popEnter: Transition {
+                ParallelAnimation {
+                    NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 250; easing.type: Easing.OutQuint }
+                    NumberAnimation {
+                        property: "x"
+                        from: mainWindow.navIsSettings ? 0 : (mainWindow.navGoingLeft ? -50 : 50)
+                        to: 0
+                        duration: 250; easing.type: Easing.OutQuint
+                    }
+                    NumberAnimation {
+                        property: "y"
+                        from: mainWindow.navIsSettings ? -30 : 0
+                        to: 0
+                        duration: 250; easing.type: Easing.OutQuint
+                    }
+                }
+            }
+            popExit: Transition {
+                ParallelAnimation {
+                    NumberAnimation { property: "opacity"; from: 1; to: 0; duration: 300; easing.type: Easing.InQuint }
+                    NumberAnimation {
+                        property: "x"
+                        from: 0
+                        to: mainWindow.navIsSettings ? 0 : (mainWindow.navGoingLeft ? 50 : -50)
+                        duration: 300; easing.type: Easing.InQuint
+                    }
+                    NumberAnimation {
+                        property: "y"
+                        from: 0
+                        to: mainWindow.navIsSettings ? 30 : 0
+                        duration: 300; easing.type: Easing.InQuint
+                    }
+                }
+            }
         }
     }
 

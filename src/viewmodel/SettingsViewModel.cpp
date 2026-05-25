@@ -7,6 +7,15 @@ SettingsViewModel::SettingsViewModel(Service::LocationService* locationService,
                                      QObject* parent)
     : QObject(parent), m_locationService(locationService) {}
 
+bool SettingsViewModel::isAutoStart() const {
+    return Util::Config::getInstance().isAutoStart();
+}
+
+void SettingsViewModel::setAutoStart(bool autoStart) {
+    Util::Config::getInstance().setAutoStart(autoStart);
+    emit settingsChanged();
+}
+
 bool SettingsViewModel::isAutoLocation() const {
     return Util::Config::getInstance().isAutoLocation();
 }

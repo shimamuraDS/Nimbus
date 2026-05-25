@@ -28,6 +28,8 @@ Config::Config() {
 
     m_iniSettings = std::make_unique<QSettings>(iniPath, QSettings::IniFormat);
     m_userSettings = std::make_unique<QSettings>();
+
+    setAutoStart(isAutoStart());
 }
 
 QString Config::getTencentApiKey() const {
@@ -52,6 +54,23 @@ void Config::setManualAdcode(int adcode) {
 
 QString Config::getManualCityName() const {
     return m_userSettings->value("Location/ManualCityName", QString::fromUtf8("北京市")).toString();
+}
+
+bool Config::isAutoStart() const {
+    return m_userSettings->value("General/AutoStart", true).toBool();
+}
+
+void Config::setAutoStart(bool autoStart) {
+    m_userSettings->setValue("General/AutoStart", autoStart);
+
+    QSettings reg("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+                  QSettings::NativeFormat);
+    if (autoStart) {
+        QString appPath = QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
+        reg.setValue("WeatherApp", appPath);
+    } else {
+        reg.remove("WeatherApp");
+    }
 }
 
 void Config::setManualCityName(const QString& cityName) {

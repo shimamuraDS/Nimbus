@@ -8,26 +8,31 @@ Button {
 
     property string direction: "left"
 
-    width: 42
-    height: 42
+    width: 36
+    height: 36
 
     contentItem: Text {
-        text: control.direction === "left" ? "◀" : "▶"
-        font.pixelSize: 18
-        color: control.pressed ? theme.accent : theme.primaryText
+        text: control.direction === "left" ? "‹" : "›"
+        font.pixelSize: 24
+        font.bold: true
+        color: control.pressed ? theme.accent : (control.hovered ? "#ffffff" : theme.secondaryText)
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
+        topPadding: -3
+        leftPadding: control.direction === "left" ? -1 : 1
+        
+        Behavior on color { ColorAnimation { duration: 150 } }
     }
 
     background: Rectangle {
-        radius: 21
-        color: control.hovered ? theme.cardBg : "transparent"
-        border.color: control.hovered ? theme.cardBorder : "transparent"
+        radius: 18
+        color: control.pressed ? theme.cardBgHover : (control.hovered ? theme.cardBgHover : theme.cardBg)
+        border.color: control.pressed ? theme.accent : (control.hovered ? theme.cardBorderHover : theme.cardBorder)
         border.width: 1
 
-        scale: control.pressed ? 0.88 : 1.0
+        scale: control.pressed ? 0.9 : (control.hovered ? 1.08 : 1.0)
 
-        Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutQuad } }
+        Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
         Behavior on color { ColorAnimation { duration: 150 } }
         Behavior on border.color { ColorAnimation { duration: 150 } }
     }

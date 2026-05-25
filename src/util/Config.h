@@ -28,6 +28,9 @@ public:
     QString getManualCityName() const;
     void setManualCityName(const QString& cityName);
 
+    bool isAutoStart() const;
+    void setAutoStart(bool autoStart);
+
     QStringList getAlertTimes() const;
     void setAlertTimes(const QStringList& times);
     void addAlertTime(const QString& time);
