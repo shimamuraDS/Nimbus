@@ -13,6 +13,7 @@
 #include "viewmodel/WeatherViewModel.h"
 #include "viewmodel/SettingsViewModel.h"
 #include "viewmodel/TrayViewModel.h"
+#include "util/ScreenHelper.h"
 
 int main(int argc, char *argv[])
 {
@@ -48,21 +49,15 @@ int main(int argc, char *argv[])
     // 初始化 QML 引擎
     QQmlApplicationEngine engine;
 
-    // 获取主屏幕几何信息，传给 QML 做窗口定位
-    QScreen* primaryScreen = QGuiApplication::primaryScreen();
-    QRect screenGeo = primaryScreen->availableGeometry();
-    QVariantMap screenInfo;
-    screenInfo["x"] = screenGeo.x();
-    screenInfo["y"] = screenGeo.y();
-    screenInfo["width"] = screenGeo.width();
-    screenInfo["height"] = screenGeo.height();
+    // 动态监听屏幕可用区域变化（任务栏自动隐藏/显示时更新）
+    auto* screenHelper = new Util::ScreenHelper(&app);
 
     // 注册 C++ 对象为 QML 上下文属性
     engine.rootContext()->setContextProperty("weatherViewModel", weatherViewModel);
     engine.rootContext()->setContextProperty("settingsViewModel", settingsViewModel);
     engine.rootContext()->setContextProperty("trayViewModel", trayViewModel);
     engine.rootContext()->setContextProperty("trayIcon", notificationMgr.getTrayIcon());
-    engine.rootContext()->setContextProperty("primaryScreen", screenInfo);
+    engine.rootContext()->setContextProperty("primaryScreen", screenHelper);
 
     // 托盘图标点击 → 切换窗口显示
     QObject::connect(notificationMgr.getTrayIcon(), &QSystemTrayIcon::activated,

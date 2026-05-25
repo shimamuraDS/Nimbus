@@ -11,20 +11,25 @@ Item {
     objectName: "TodayView"
 
     property bool initialCentered: false
+    property int _centerRetries: 0
 
     function centerOnCurrentHour() {
         if (initialCentered) return
         if (typeof weatherViewModel === "undefined") return
         var models = weatherViewModel.hourlyList
         if (!models || models.length === 0) return
-        if (row.width <= 0) return
-        // Only center when row has overflowed (row.x is stable at 0)
-        // or all cards fit (no centering needed, handled by Row's x binding)
-        if (row.width <= flick.width) {
+        // Both flick and row must have valid layout dimensions
+        if (row.implicitWidth <= 0 || flick.width <= 0) return
+
+        var totalW = row.implicitWidth
+        // All cards fit on screen — no scrolling needed
+        if (totalW <= flick.width) {
             flick.contentX = 0
             initialCentered = true
+            centerTimer.stop()
             return
         }
+
         var currentHour = currentHourStr()
         var targetIndex = -1
         for (var i = 0; i < models.length; i++) {
@@ -33,27 +38,47 @@ Item {
                 break
             }
         }
-        if (targetIndex < 0) return
-        var cardW = 80 + theme.spacingSmall
+        if (targetIndex < 0) {
+            // Current hour not found in data — stop retrying
+            initialCentered = true
+            centerTimer.stop()
+            return
+        }
+        // Each card is 80px wide; Row spacing sits between cards.
+        var cardW = 80 + row.spacing
         var cardCenter = targetIndex * cardW + 40
         var targetX = cardCenter - flick.width / 2
-        var maxX = row.width - flick.width
-        flick.contentX = Math.max(0, Math.min(targetX, maxX))
+        var maxX = totalW - flick.width
+        var finalX = Math.max(0, Math.min(targetX, maxX))
+        flick.contentX = finalX
         initialCentered = true
+        centerTimer.stop()
     }
 
     Timer {
         id: centerTimer
-        interval: 100
-        repeat: false
-        onTriggered: centerOnCurrentHour()
+        interval: 50
+        repeat: true
+        onTriggered: {
+            root._centerRetries++
+            if (root._centerRetries > 60) {
+                stop()
+                return
+            }
+            centerOnCurrentHour()
+        }
     }
 
-    Component.onCompleted: centerTimer.start()
+    Component.onCompleted: {
+        _centerRetries = 0
+        centerTimer.start()
+    }
 
     Connections {
         target: typeof weatherViewModel !== "undefined" ? weatherViewModel : null
         function onHourlyDataChanged() {
+            initialCentered = false
+            _centerRetries = 0
             centerTimer.restart()
         }
     }
@@ -84,20 +109,17 @@ Item {
             Layout.fillHeight: true
             Layout.leftMargin: theme.spacingSmall
             Layout.rightMargin: theme.spacingSmall
-            contentWidth: row.width
+            contentWidth: Math.max(row.implicitWidth, width)
             contentHeight: height
             clip: true
-            interactive: contentWidth > width
+            interactive: row.implicitWidth > width
 
             Row {
                 id: row
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: theme.spacingSmall
-                x: Math.max(0, (flick.width - row.width) / 2)
-
-                onWidthChanged: {
-                    if (width > 0) centerTimer.restart()
-                }
+                // Center row when all cards fit; otherwise anchor to left for scrolling
+                x: implicitWidth <= flick.width ? (flick.width - implicitWidth) / 2 : 0
 
                 Repeater {
                     model: typeof weatherViewModel !== "undefined" ? weatherViewModel.hourlyList : []
@@ -122,3 +144,4 @@ Item {
         }
     }
 }
+

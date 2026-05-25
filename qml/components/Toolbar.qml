@@ -78,7 +78,8 @@ Rectangle {
 
             CitySelector {
                 visible: typeof settingsViewModel !== "undefined" && !settingsViewModel.isAutoLocation
-                Layout.preferredWidth: 130
+                Layout.preferredWidth: 90
+                Layout.preferredHeight: 28
                 onCitySelected: function(adcode, name) {
                     if (typeof settingsViewModel !== "undefined") {
                         settingsViewModel.setManualCity(adcode, name)

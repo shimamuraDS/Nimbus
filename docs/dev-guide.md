@@ -9,6 +9,7 @@
 *   **Service Layer (`src/service`)**：`WeatherService`, `LocationService`, `AlertService`, `NotificationManager`，负责业务逻辑流转、Windows 原生弹窗唤起以及定时任务调度。
 *   **ViewModel Layer (`src/viewmodel`)**：继承自 `QObject`，通过 `Q_PROPERTY` 暴露 `todayWeather`, `pastWeatherList` 等属性，供前端 UI 数据绑定。
 *   **View Layer (`qml/`)**：分为 `components` (高复用组件，如 `WeatherCard`, `Toolbar`, `Theme`) 和 `views` (页面容器，如 `TodayView`, `SettingsView`)。
+*   **Util Layer (`src/util`)**：`Config`, `TimeUtil`, `WeatherCode`, `ScreenHelper` 等工具类，提供配置管理、时间计算、天气代码映射、屏幕几何动态监听（含 Windows 自动隐藏任务栏检测）等基础能力。
 
 ### 分层依赖关系
 
@@ -28,7 +29,7 @@ QML View Layer  →  ViewModel Layer  →  Service Layer  →  Network Layer
 | `WeatherCard` | `qml/components/WeatherCard.qml` | 玻璃态天气卡片（240×190），`isPast` 属性控制暖珊瑚/冷青背景色变体，hover 缩放效果，图标浮动动画 |
 | `HourlyCard` | `qml/components/HourlyCard.qml` | 逐小时天气卡片（竖条 80×170），内置天气图标，图标悬停浮动动画（transform Translate），`isNow` 属性高亮当前小时（青色渐变边框+发光效果） |
 | `NavigationButton` | `qml/components/NavigationButton.qml` | 圆形导航按钮，hover 发光边框，按压缩放动画 |
-| `CitySelector` | `qml/components/CitySelector.qml` | 城市下拉选择器，内置 98 个全国城市，支持滚动，带弹出/收起动画和 hover 高亮 |
+| `CitySelector` | `qml/components/CitySelector.qml` | 城市选择器，内置 98 个全国城市，左侧省份列表 + 右侧城市列表两列弹出面板，带弹出/收起动画和 hover 高亮 |
 | `TodayView` | `qml/views/TodayView.qml` | 当日逐小时天气时间线，横向滑动，默认居中显示当前小时卡片，`isNow` 高亮 |
 | `PastView` | `qml/views/PastView.qml` | 过去 7 天天气列表，暖珊瑚色卡片，水平居中，两侧对称间距，默认滚动至末尾（最近一天） |
 | `FutureView` | `qml/views/FutureView.qml` | 未来 7 天预报列表，冷青色卡片，水平居中，两侧对称间距 |

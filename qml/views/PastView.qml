@@ -10,17 +10,40 @@ Item {
 
     objectName: "PastView"
 
-    Component.onCompleted: scrollToEndTimer.start()
+    property bool _scrolled: false
+    property int _retries: 0
+
+    function scrollToEnd() {
+        if (_scrolled) return
+        if (flick.width <= 0 || row.width <= 0) return
+        if (row.width <= flick.width) {
+            // All cards fit — no scrolling needed
+            _scrolled = true
+            scrollToEndTimer.stop()
+            return
+        }
+        flick.contentX = flick.contentWidth - flick.width
+        _scrolled = true
+        scrollToEndTimer.stop()
+    }
 
     Timer {
         id: scrollToEndTimer
-        interval: 150
-        repeat: false
+        interval: 16
+        repeat: true
         onTriggered: {
-            if (flick.contentWidth > flick.width) {
-                flick.contentX = flick.contentWidth - flick.width
+            root._retries++
+            if (root._retries > 60) {
+                stop()
+                return
             }
+            scrollToEnd()
         }
+    }
+
+    Component.onCompleted: {
+        _retries = 0
+        scrollToEndTimer.start()
     }
 
     ColumnLayout {

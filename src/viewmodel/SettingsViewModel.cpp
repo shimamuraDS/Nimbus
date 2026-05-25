@@ -35,8 +35,9 @@ void SettingsViewModel::setAutoLocation(bool isAuto) {
     if (isAuto) {
         m_locationService->switchToAuto();
     } else {
-        m_locationService->switchToManual(config.getManualAdcode(),
-                                          config.getManualCityName());
+        // Only switch mode setting — don't trigger weather refresh.
+        // Weather will refresh when the user selects a city from CitySelector.
+        config.setAutoLocation(false);
     }
     emit settingsChanged();
 }

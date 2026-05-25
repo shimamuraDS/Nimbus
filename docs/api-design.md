@@ -52,4 +52,4 @@
 
 ## 4. 手动城市列表
 
-手动定位模式内置 98 个城市，覆盖所有省份/直辖市/自治区/特别行政区，使用中国标准行政区划代码（adcode）。详见 `qml/components/CitySelector.qml` 中的 ListModel。
+手动定位模式内置 98 个城市，覆盖所有省份/直辖市/自治区/特别行政区，使用中国标准行政区划代码（adcode）。数据以省份分组的 JSON 数组形式存储在 `qml/components/CitySelector.qml` 的 `provinceData` 属性中，供两列弹出面板（省份列表 + 城市列表）使用。

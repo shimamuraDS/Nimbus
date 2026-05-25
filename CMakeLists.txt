@@ -15,6 +15,7 @@ set(TOOL_SRCS
     src/util/Config.cpp
     src/util/TimeUtil.cpp
     src/util/WeatherCode.cpp
+    src/util/ScreenHelper.cpp
 )
 set(DATA_SRCS
     src/data/WeatherCacheManager.cpp
@@ -75,6 +76,11 @@ target_link_libraries(WeatherApp PRIVATE
     Qt6::Network
     Qt6::Widgets
 )
+
+# Windows: link Shell32 for SHAppBarMessage (auto-hide taskbar detection)
+if(WIN32)
+    target_link_libraries(WeatherApp PRIVATE Shell32)
+endif()
 
 # 添加测试子目录
 enable_testing()
