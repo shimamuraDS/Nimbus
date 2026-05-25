@@ -10,6 +10,19 @@ Item {
 
     objectName: "PastView"
 
+    Component.onCompleted: scrollToEndTimer.start()
+
+    Timer {
+        id: scrollToEndTimer
+        interval: 150
+        repeat: false
+        onTriggered: {
+            if (flick.contentWidth > flick.width) {
+                flick.contentX = flick.contentWidth - flick.width
+            }
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: theme.spacingMedium
