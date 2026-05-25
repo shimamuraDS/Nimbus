@@ -75,7 +75,7 @@ Rectangle {
         }
 
         Image {
-            id: weatherIcon
+            id: weatherImg
             source: weatherIcon(weather)
             sourceSize.width: 28
             sourceSize.height: 28
@@ -85,9 +85,9 @@ Rectangle {
                 id: floatAnim
                 running: isNow || hoverArea.containsMouse
                 loops: Animation.Infinite
-                NumberAnimation { target: weatherIcon; property: "y"; from: 0; to: -2; duration: 1200; easing.type: Easing.InOutQuad }
-                NumberAnimation { target: weatherIcon; property: "y"; from: -2; to: 0; duration: 1200; easing.type: Easing.InOutQuad }
-                onStopped: weatherIcon.y = 0
+                NumberAnimation { target: weatherImg; property: "y"; from: 0; to: -2; duration: 1200; easing.type: Easing.InOutQuad }
+                NumberAnimation { target: weatherImg; property: "y"; from: -2; to: 0; duration: 1200; easing.type: Easing.InOutQuad }
+                onStopped: weatherImg.y = 0
             }
         }
 
