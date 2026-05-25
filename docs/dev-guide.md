@@ -36,7 +36,7 @@ QML View Layer  →  ViewModel Layer  →  Service Layer  →  Network Layer
 
 ## 3. 页面过渡动画
 
-StackView 使用方向感知过渡动画（300ms, OutQuint 缓动）：
+StackView 使用方向感知过渡动画（pushEnter/popExit: 200ms OutCubic, pushExit/popEnter: 150ms InCubic）：
 
 | 操作 | 动画 | 方向控制 |
 |------|------|---------|
