@@ -87,12 +87,10 @@ Rectangle {
 
             SequentialAnimation {
                 id: floatAnim
-                target: floatTransform
-                property: "y"
                 running: isNow || hoverArea.containsMouse
                 loops: Animation.Infinite
-                NumberAnimation { from: 0; to: -2; duration: 1200; easing.type: Easing.InOutQuad }
-                NumberAnimation { from: -2; to: 0; duration: 1200; easing.type: Easing.InOutQuad }
+                NumberAnimation { target: floatTransform; property: "y"; from: 0; to: -2; duration: 1200; easing.type: Easing.InOutQuad }
+                NumberAnimation { target: floatTransform; property: "y"; from: -2; to: 0; duration: 1200; easing.type: Easing.InOutQuad }
                 onStopped: floatTransform.y = 0
             }
         }
