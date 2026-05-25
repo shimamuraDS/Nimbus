@@ -28,9 +28,9 @@ Item {
 
             Item {
                 id: alignedRow
-                y: Math.max(0, (parent.height - 160) * 0.35)
+                y: Math.max(0, (parent.height - 170) * 0.35)
                 width: parent.width
-                height: 160
+                height: 170
 
                 Flickable {
                     id: flick
@@ -41,11 +41,11 @@ Item {
                         bottom: parent.bottom
                         leftMargin: 46
                         rightMargin: 46
-                        topMargin: 6
-                        bottomMargin: 4
+                        topMargin: 8
+                        bottomMargin: 6
                     }
                     contentWidth: Math.max(row.width + row.x, width)
-                    contentHeight: 150
+                    contentHeight: 160
                     clip: true
                     interactive: contentWidth > width
 
@@ -53,7 +53,7 @@ Item {
                         id: row
                         spacing: theme.spacingSmall
                         x: Math.max(0, (flick.width - row.width) / 2)
-                        y: 4 // safe offset for Y lift
+                        y: 6
 
                         Repeater {
                             model: typeof weatherViewModel !== "undefined" ? weatherViewModel.pastWeatherList : []
