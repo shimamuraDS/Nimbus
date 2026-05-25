@@ -108,12 +108,10 @@ Rectangle {
 
                         SequentialAnimation {
                             id: dayFloatAnim
-                            target: dayIcon
-                            property: "y"
                             running: hoverArea.containsMouse
                             loops: Animation.Infinite
-                            NumberAnimation { from: 0; to: -2; duration: 1200; easing.type: Easing.InOutQuad }
-                            NumberAnimation { from: -2; to: 0; duration: 1200; easing.type: Easing.InOutQuad }
+                            NumberAnimation { target: dayIcon; property: "y"; from: 0; to: -2; duration: 1200; easing.type: Easing.InOutQuad }
+                            NumberAnimation { target: dayIcon; property: "y"; from: -2; to: 0; duration: 1200; easing.type: Easing.InOutQuad }
                             onStopped: dayIcon.y = 0
                         }
                     }
@@ -144,12 +142,10 @@ Rectangle {
 
                         SequentialAnimation {
                             id: nightFloatAnim
-                            target: nightIcon
-                            property: "y"
                             running: hoverArea.containsMouse
                             loops: Animation.Infinite
-                            NumberAnimation { from: 0; to: -2; duration: 1200; easing.type: Easing.InOutQuad }
-                            NumberAnimation { from: -2; to: 0; duration: 1200; easing.type: Easing.InOutQuad }
+                            NumberAnimation { target: nightIcon; property: "y"; from: 0; to: -2; duration: 1200; easing.type: Easing.InOutQuad }
+                            NumberAnimation { target: nightIcon; property: "y"; from: -2; to: 0; duration: 1200; easing.type: Easing.InOutQuad }
                             onStopped: nightIcon.y = 0
                         }
                     }
