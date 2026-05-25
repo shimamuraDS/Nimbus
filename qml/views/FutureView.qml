@@ -44,7 +44,7 @@ Item {
                         topMargin: 5
                         bottomMargin: 5
                     }
-                    contentWidth: Math.max(row.width + row.x, width)
+                    contentWidth: Math.max(row.width + row.x + 10, width)
                     contentHeight: 200
                     clip: true
                     interactive: contentWidth > width
@@ -52,7 +52,7 @@ Item {
                     Row {
                         id: row
                         spacing: theme.spacingSmall
-                        x: Math.max(0, (flick.width - row.width) / 2)
+                        x: Math.max(5, (flick.width - row.width) / 2)
                         y: 5
 
                         Repeater {
