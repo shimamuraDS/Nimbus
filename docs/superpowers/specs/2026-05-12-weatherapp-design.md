@@ -197,7 +197,7 @@ struct DailyWeather {
 *   **`Toolbar`**：位于上方，最右方设置按键与 ViewModel 状态绑定，在设置页与主页之间切换图标样式（设置/返回）。
 *   **`StackView` (页面导航)**：
     *   `TodayView`：横向时间线渲染逐小时天气卡片（`HourlyCard`），自动高亮当前小时。左侧按键 Push 到 `PastView`，右侧按键 Push 到 `FutureView`。
-    *   `PastView`：渲染 `pastWeatherList` 列表，标题"过去 7 天"，暖珊瑚色卡片（`isPast: true`），右侧按键 Pop 返回主页。卡片水平居中，两侧对称间距。
+    *   `PastView`：渲染 `pastWeatherList` 列表，标题"过去 7 天"，暖珊瑚色卡片（`isPast: true`），右侧按键 Pop 返回主页。卡片水平居中，两侧对称间距，默认滚动至末尾（最近一天）。
     *   `FutureView`：渲染 `futureWeatherList` 列表，标题"未来 7 天"，冷青色卡片（默认），左侧按键 Pop 返回主页。卡片水平居中，两侧对称间距。
     *   `SettingsView`（定位切换与提醒管理）：
         *   整体采用 Flickable 可滚动布局，内容超出时自动显示滚动条。
@@ -209,7 +209,7 @@ struct DailyWeather {
             *   UI 展示：`选择城市：` 标签 + 城市下拉框（内置 98 个全国城市）+ `返回自动定位` 链接。
             *   交互行为：用户从下拉框选择城市后天气立即更新。点击 `返回自动定位` 恢复 IP 定位。
         *   时间管理：绑定 `alertTimeList`。常驻"添加时间点"按钮；添加后，每项尾部附带红色"删除"按钮。
-*   **`WeatherCard`**：天气卡片组件，显示早晚天气、气温、湿度。通过 `isPast` 属性切换暖金（过去）与冷蓝（未来）背景色变体。
+*   **`WeatherCard`**：天气卡片组件（240×190），显示早晚天气、气温、湿度及天气图标。通过 `isPast` 属性切换暖珊瑚（过去）与冷青（未来）背景色变体，hover 缩放效果（1.03x），图标悬浮动画（transform Translate）。
 *   **`NavigationButton`**：导航按钮组件（左/右箭头）。
 *   **`TimePicker`**：时间选择器组件。
 *   **`CitySelector`**：城市选择器组件。

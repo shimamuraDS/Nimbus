@@ -25,13 +25,13 @@ QML View Layer  →  ViewModel Layer  →  Service Layer  →  Network Layer
 | `MainWindow` | `qml/MainWindow.qml` | 无边框主窗口，深色赛博朋克渐变背景，双层辉光边框，StackView 页面路由，方向感知过渡动画 |
 | `Theme` | `qml/components/Theme.qml` | 全局视觉主题定义（深色赛博朋克色板：电光青/珊瑚/紫罗兰强调色、玻璃态辉光边框、间距、圆角、字体），各组件通过 `Theme { id: theme }` 实例化使用 |
 | `Toolbar` | `qml/components/Toolbar.qml` | 顶部工具栏，透明融入渐变背景，设置/返回按钮，最小化(-)按钮，离线提示横幅 |
-| `WeatherCard` | `qml/components/WeatherCard.qml` | 玻璃态天气卡片，`isPast` 属性控制暖金/冷蓝背景色变体 |
-| `HourlyCard` | `qml/components/HourlyCard.qml` | 逐小时天气卡片（竖条），内置天气图标显示，`isNow` 属性高亮当前小时（青色渐变边框+发光效果） |
+| `WeatherCard` | `qml/components/WeatherCard.qml` | 玻璃态天气卡片（240×190），`isPast` 属性控制暖珊瑚/冷青背景色变体，hover 缩放效果，图标浮动动画 |
+| `HourlyCard` | `qml/components/HourlyCard.qml` | 逐小时天气卡片（竖条 80×170），内置天气图标，图标悬停浮动动画（transform Translate），`isNow` 属性高亮当前小时（青色渐变边框+发光效果） |
 | `NavigationButton` | `qml/components/NavigationButton.qml` | 圆形导航按钮，hover 发光边框，按压缩放动画 |
 | `CitySelector` | `qml/components/CitySelector.qml` | 城市下拉选择器，内置 98 个全国城市，支持滚动，带弹出/收起动画和 hover 高亮 |
 | `TodayView` | `qml/views/TodayView.qml` | 当日逐小时天气时间线，可横向滑动，当前小时自动高亮 |
-| `PastView` | `qml/views/PastView.qml` | 过去 7 天天气列表，暖金色卡片，水平居中，两侧对称间距 |
-| `FutureView` | `qml/views/FutureView.qml` | 未来 7 天预报列表，冷蓝色卡片，水平居中，两侧对称间距 |
+| `PastView` | `qml/views/PastView.qml` | 过去 7 天天气列表，暖珊瑚色卡片，水平居中，两侧对称间距，默认滚动至末尾（最近一天） |
+| `FutureView` | `qml/views/FutureView.qml` | 未来 7 天预报列表，冷青色卡片，水平居中，两侧对称间距 |
 | `SettingsView` | `qml/views/SettingsView.qml` | 开机自启动开关 + 定位设置 + 提醒时间管理（Flickable 可滚动，小时/分钟 ComboBox 下拉选择，支持修改和删除） |
 
 ## 3. 页面过渡动画
