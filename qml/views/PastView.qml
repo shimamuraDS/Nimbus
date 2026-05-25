@@ -28,9 +28,9 @@ Item {
 
             Item {
                 id: alignedRow
-                y: Math.max(0, (parent.height - 170) * 0.35)
+                y: Math.max(0, (parent.height - 200) * 0.35)
                 width: parent.width
-                height: 170
+                height: 200
 
                 Flickable {
                     id: flick
@@ -41,11 +41,11 @@ Item {
                         bottom: parent.bottom
                         leftMargin: 46
                         rightMargin: 46
-                        topMargin: 8
-                        bottomMargin: 6
+                        topMargin: 5
+                        bottomMargin: 5
                     }
                     contentWidth: Math.max(row.width + row.x, width)
-                    contentHeight: 160
+                    contentHeight: 190
                     clip: true
                     interactive: contentWidth > width
 
@@ -53,15 +53,14 @@ Item {
                         id: row
                         spacing: theme.spacingSmall
                         x: Math.max(0, (flick.width - row.width) / 2)
-                        y: 6
 
                         Repeater {
                             model: typeof weatherViewModel !== "undefined" ? weatherViewModel.pastWeatherList : []
 
                             delegate: WeatherCard {
                                 isPast: true
-                                width: 200
-                                height: 150
+                                width: 240
+                                height: 190
                                 date: modelData.date || ""
                                 dayWeather: modelData.dayWeather || "--"
                                 dayTemp: modelData.dayTemp || 0

@@ -4,8 +4,8 @@ import QtQuick.Layouts
 
 Rectangle {
     id: root
-    width: 220
-    height: 160
+    width: 240
+    height: 190
     radius: theme.radiusMedium
     
     // Glass styling based on Past/Future themes
@@ -42,14 +42,12 @@ Rectangle {
         return basePath + "unknown.png"
     }
 
-    // Hover vertical translation & scale
-    scale: hoverArea.containsMouse ? 1.025 : 1.0
-    y: hoverArea.containsMouse ? -5 : 0
+    // Hover scale effect
+    scale: hoverArea.containsMouse ? 1.03 : 1.0
 
     Behavior on color { ColorAnimation { duration: 200 } }
     Behavior on border.color { ColorAnimation { duration: 200 } }
     Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutQuad } }
-    Behavior on y { NumberAnimation { duration: 200; easing.type: Easing.OutQuad } }
 
     MouseArea {
         id: hoverArea
