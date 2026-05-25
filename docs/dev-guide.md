@@ -32,7 +32,7 @@ QML View Layer  →  ViewModel Layer  →  Service Layer  →  Network Layer
 | `TodayView` | `qml/views/TodayView.qml` | 当日逐小时天气时间线，可横向滑动，当前小时自动高亮 |
 | `PastView` | `qml/views/PastView.qml` | 过去 7 天天气列表，暖珊瑚色卡片，水平居中，两侧对称间距，默认滚动至末尾（最近一天） |
 | `FutureView` | `qml/views/FutureView.qml` | 未来 7 天预报列表，冷青色卡片，水平居中，两侧对称间距 |
-| `SettingsView` | `qml/views/SettingsView.qml` | 开机自启动开关 + 定位设置 + 提醒时间管理（Flickable 可滚动，小时/分钟 ComboBox 下拉选择，支持修改和删除） |
+| `SettingsView` | `qml/views/SettingsView.qml` | 开机自启动开关 + 定位设置 + 提醒时间管理（Flickable 可滚动，提醒时间+提前量双行选择器，支持修改和删除，每个提醒显示对应提前量） |
 
 ## 3. 页面过渡动画
 

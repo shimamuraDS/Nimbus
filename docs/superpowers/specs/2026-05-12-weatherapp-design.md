@@ -150,7 +150,8 @@ WeatherApp/
 *   `General/AutoStart` (bool)：开机自启动开关状态（默认 true）。
 *   `Location/IsAuto` (bool)：自动定位开启状态。
 *   `Location/ManualAdcode` (int) / `Location/ManualCityName` (QString)：手动选择的城市信息。
-*   `Alerts/Times` (QStringList)：提醒时间点列表。
+*   `Alerts/Times` (QStringList)：提醒时间点列表（"HH:mm" 格式）。
+*   `Alerts/AdvanceMinutes` (QStringList)：与 `Alerts/Times` 一一对应的提前分钟数列表（字符串形式的整数）。
 
 ### 3. C++数据结构定义
 
