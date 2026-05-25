@@ -37,6 +37,33 @@ Item {
     property int modifyingIndex: -1
     property string modifyingOldTime: ""
 
+    // 提前时间选择辅助
+    function advanceHourOptions() {
+        var options = []
+        for (var h = 0; h < 24; h++) {
+            options.push(h.toString().padStart(2, '0'))
+        }
+        return options
+    }
+    function advanceMinuteOptions() {
+        var options = []
+        for (var m = 0; m < 60; m++) {
+            options.push(m.toString().padStart(2, '0'))
+        }
+        return options
+    }
+    function selectedAdvanceMinutes() {
+        return parseInt(advHourCombo.currentText) * 60 + parseInt(advMinCombo.currentText)
+    }
+    function formatAdvanceText(minutes) {
+        if (minutes <= 0) return ""
+        var h = Math.floor(minutes / 60)
+        var m = minutes % 60
+        if (h > 0 && m > 0) return qsTr("提前") + h + qsTr("小时") + m + qsTr("分钟")
+        if (h > 0) return qsTr("提前") + h + qsTr("小时")
+        return qsTr("提前") + m + qsTr("分钟")
+    }
+
     Flickable {
         anchors.fill: parent
         contentWidth: width
@@ -221,10 +248,10 @@ Item {
                         color: hoverArea.containsMouse ? theme.cardBgHover : theme.cardBg
                         border.color: hoverArea.containsMouse ? theme.cardBorderHover : theme.cardBorder
                         border.width: 1
-                        
+
                         Behavior on color { ColorAnimation { duration: 150 } }
                         Behavior on border.color { ColorAnimation { duration: 150 } }
-                        
+
                         MouseArea {
                             id: hoverArea
                             anchors.fill: parent
@@ -240,6 +267,15 @@ Item {
                                 text: modelData
                                 font: theme.bodyFont
                                 color: theme.primaryText
+                                Layout.alignment: Qt.AlignVCenter
+                            }
+
+                            Text {
+                                visible: advText.text !== ""
+                                text: formatAdvanceText(typeof settingsViewModel !== "undefined" ? settingsViewModel.getAdvanceMinutesFor(modelData) : 0)
+                                id: advText
+                                font: theme.captionFont
+                                color: theme.accentSecondary
                                 Layout.alignment: Qt.AlignVCenter
                             }
 
@@ -275,6 +311,9 @@ Item {
                                         hourCombo.currentIndex = hourCombo.model.indexOf(parts[0])
                                         minCombo.currentIndex = minCombo.model.indexOf(parts[1])
                                     }
+                                    var advMin = typeof settingsViewModel !== "undefined" ? settingsViewModel.getAdvanceMinutesFor(modelData) : 0
+                                    advHourCombo.currentIndex = Math.floor(advMin / 60)
+                                    advMinCombo.currentIndex = advMin % 60
                                 }
                             }
 
@@ -312,230 +351,400 @@ Item {
             }
 
             // ── Add / Modify section ──
-            RowLayout {
+            ColumnLayout {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: theme.spacingSmall
                 Layout.topMargin: theme.spacingSmall
 
-                ComboBox {
-                    id: hourCombo
-                    model: generateHourOptions()
-                    font: theme.bodyFont
-                    flat: true
-                    implicitWidth: 72
-                    implicitHeight: 32
+                // Time selectors row
+                RowLayout {
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: theme.spacingSmall
 
-                    contentItem: Text {
-                        text: hourCombo.currentText
+                    ComboBox {
+                        id: hourCombo
+                        model: generateHourOptions()
                         font: theme.bodyFont
-                        color: theme.primaryText
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
+                        flat: true
+                        implicitWidth: 72
+                        implicitHeight: 32
 
-                    background: Rectangle {
-                        radius: theme.radiusSmall
-                        color: hourCombo.hovered ? theme.cardBgHover : theme.cardBg
-                        border.color: hourCombo.pressed ? theme.accent : (hourCombo.hovered ? theme.cardBorderHover : theme.cardBorder)
-                        border.width: 1
-                        Behavior on color { ColorAnimation { duration: 150 } }
-                        Behavior on border.color { ColorAnimation { duration: 150 } }
-                    }
-
-                    popup: Popup {
-                        y: hourCombo.height + 4
-                        width: hourCombo.width
-                        implicitHeight: Math.min(contentItem.implicitHeight + 8, 200)
-                        padding: 4
-
-                        enter: Transition {
-                            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 180; easing.type: Easing.OutQuad }
-                            NumberAnimation { property: "y"; from: hourCombo.height - 4; to: hourCombo.height + 4; duration: 180; easing.type: Easing.OutQuad }
-                        }
-
-                        contentItem: ListView {
-                            clip: true
-                            implicitHeight: Math.min(contentHeight, 200)
-                            model: hourCombo.popup.visible ? hourCombo.delegateModel : null
-                            currentIndex: hourCombo.highlightedIndex
-                            ScrollIndicator.vertical: ScrollIndicator {}
-                        }
-
-                        background: Rectangle {
-                            radius: theme.radiusMedium
-                            color: "#16162a"
-                            border.color: theme.cardBorderHover
-                            border.width: 1
-                        }
-                    }
-
-                    delegate: ItemDelegate {
-                        id: hourDel
-                        width: hourCombo.width
-                        height: 28
-                        
                         contentItem: Text {
-                            text: modelData
+                            text: hourCombo.currentText
                             font: theme.bodyFont
-                            color: hourDel.hovered ? theme.accent : theme.primaryText
+                            color: theme.primaryText
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
-                        
-                        background: Rectangle {
-                            color: hourDel.hovered ? theme.cardBgHover : "transparent"
-                            Behavior on color { ColorAnimation { duration: 120 } }
-                        }
-                    }
-                }
-
-                Text {
-                    text: ":"
-                    font.pixelSize: 18
-                    font.bold: true
-                    color: theme.primaryText
-                }
-
-                ComboBox {
-                    id: minCombo
-                    model: generateMinuteOptions()
-                    font: theme.bodyFont
-                    flat: true
-                    implicitWidth: 72
-                    implicitHeight: 32
-                    currentIndex: 0
-
-                    contentItem: Text {
-                        text: minCombo.currentText
-                        font: theme.bodyFont
-                        color: theme.primaryText
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-
-                    background: Rectangle {
-                        radius: theme.radiusSmall
-                        color: minCombo.hovered ? theme.cardBgHover : theme.cardBg
-                        border.color: minCombo.pressed ? theme.accent : (minCombo.hovered ? theme.cardBorderHover : theme.cardBorder)
-                        border.width: 1
-                        Behavior on color { ColorAnimation { duration: 150 } }
-                        Behavior on border.color { ColorAnimation { duration: 150 } }
-                    }
-
-                    popup: Popup {
-                        y: minCombo.height + 4
-                        width: minCombo.width
-                        implicitHeight: Math.min(contentItem.implicitHeight + 8, 200)
-                        padding: 4
-
-                        enter: Transition {
-                            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 180; easing.type: Easing.OutQuad }
-                            NumberAnimation { property: "y"; from: minCombo.height - 4; to: minCombo.height + 4; duration: 180; easing.type: Easing.OutQuad }
-                        }
-
-                        contentItem: ListView {
-                            clip: true
-                            implicitHeight: Math.min(contentHeight, 200)
-                            model: minCombo.popup.visible ? minCombo.delegateModel : null
-                            currentIndex: minCombo.highlightedIndex
-                            ScrollIndicator.vertical: ScrollIndicator {}
-                        }
 
                         background: Rectangle {
-                            radius: theme.radiusMedium
-                            color: "#16162a"
-                            border.color: theme.cardBorderHover
+                            radius: theme.radiusSmall
+                            color: hourCombo.hovered ? theme.cardBgHover : theme.cardBg
+                            border.color: hourCombo.pressed ? theme.accent : (hourCombo.hovered ? theme.cardBorderHover : theme.cardBorder)
                             border.width: 1
+                            Behavior on color { ColorAnimation { duration: 150 } }
+                            Behavior on border.color { ColorAnimation { duration: 150 } }
+                        }
+
+                        popup: Popup {
+                            y: hourCombo.height + 4
+                            width: hourCombo.width
+                            implicitHeight: Math.min(contentItem.implicitHeight + 8, 200)
+                            padding: 4
+
+                            enter: Transition {
+                                NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 180; easing.type: Easing.OutQuad }
+                                NumberAnimation { property: "y"; from: hourCombo.height - 4; to: hourCombo.height + 4; duration: 180; easing.type: Easing.OutQuad }
+                            }
+
+                            contentItem: ListView {
+                                clip: true
+                                implicitHeight: Math.min(contentHeight, 200)
+                                model: hourCombo.popup.visible ? hourCombo.delegateModel : null
+                                currentIndex: hourCombo.highlightedIndex
+                                ScrollIndicator.vertical: ScrollIndicator {}
+                            }
+
+                            background: Rectangle {
+                                radius: theme.radiusMedium
+                                color: "#16162a"
+                                border.color: theme.cardBorderHover
+                                border.width: 1
+                            }
+                        }
+
+                        delegate: ItemDelegate {
+                            id: hourDel
+                            width: hourCombo.width
+                            height: 28
+
+                            contentItem: Text {
+                                text: modelData
+                                font: theme.bodyFont
+                                color: hourDel.hovered ? theme.accent : theme.primaryText
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+
+                            background: Rectangle {
+                                color: hourDel.hovered ? theme.cardBgHover : "transparent"
+                                Behavior on color { ColorAnimation { duration: 120 } }
+                            }
                         }
                     }
 
-                    delegate: ItemDelegate {
-                        id: minDel
-                        width: minCombo.width
-                        height: 28
-                        
+                    Text {
+                        text: ":"
+                        font.pixelSize: 18
+                        font.bold: true
+                        color: theme.primaryText
+                    }
+
+                    ComboBox {
+                        id: minCombo
+                        model: generateMinuteOptions()
+                        font: theme.bodyFont
+                        flat: true
+                        implicitWidth: 72
+                        implicitHeight: 32
+                        currentIndex: 0
+
                         contentItem: Text {
-                            text: modelData
+                            text: minCombo.currentText
                             font: theme.bodyFont
-                            color: minDel.hovered ? theme.accent : theme.primaryText
+                            color: theme.primaryText
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
-                        
+
                         background: Rectangle {
-                            color: minDel.hovered ? theme.cardBgHover : "transparent"
-                            Behavior on color { ColorAnimation { duration: 120 } }
+                            radius: theme.radiusSmall
+                            color: minCombo.hovered ? theme.cardBgHover : theme.cardBg
+                            border.color: minCombo.pressed ? theme.accent : (minCombo.hovered ? theme.cardBorderHover : theme.cardBorder)
+                            border.width: 1
+                            Behavior on color { ColorAnimation { duration: 150 } }
+                            Behavior on border.color { ColorAnimation { duration: 150 } }
+                        }
+
+                        popup: Popup {
+                            y: minCombo.height + 4
+                            width: minCombo.width
+                            implicitHeight: Math.min(contentItem.implicitHeight + 8, 200)
+                            padding: 4
+
+                            enter: Transition {
+                                NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 180; easing.type: Easing.OutQuad }
+                                NumberAnimation { property: "y"; from: minCombo.height - 4; to: minCombo.height + 4; duration: 180; easing.type: Easing.OutQuad }
+                            }
+
+                            contentItem: ListView {
+                                clip: true
+                                implicitHeight: Math.min(contentHeight, 200)
+                                model: minCombo.popup.visible ? minCombo.delegateModel : null
+                                currentIndex: minCombo.highlightedIndex
+                                ScrollIndicator.vertical: ScrollIndicator {}
+                            }
+
+                            background: Rectangle {
+                                radius: theme.radiusMedium
+                                color: "#16162a"
+                                border.color: theme.cardBorderHover
+                                border.width: 1
+                            }
+                        }
+
+                        delegate: ItemDelegate {
+                            id: minDel
+                            width: minCombo.width
+                            height: 28
+
+                            contentItem: Text {
+                                text: modelData
+                                font: theme.bodyFont
+                                color: minDel.hovered ? theme.accent : theme.primaryText
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+
+                            background: Rectangle {
+                                color: minDel.hovered ? theme.cardBgHover : "transparent"
+                                Behavior on color { ColorAnimation { duration: 120 } }
+                            }
                         }
                     }
                 }
 
-                Button {
-                    id: addModifyBtn
-                    text: root.modifyingIndex >= 0 ? qsTr("保存") : qsTr("添加")
-                    font: theme.bodyFont
-                    flat: true
-                    implicitHeight: 32
+                // Advance time selectors row
+                RowLayout {
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: theme.spacingSmall
 
-                    contentItem: Text {
-                        text: addModifyBtn.text
-                        font: theme.bodyFont
-                        color: theme.accent
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        leftPadding: 12
-                        rightPadding: 12
-                    }
-
-                    background: Rectangle {
-                        radius: theme.radiusSmall
-                        color: addModifyBtn.pressed ? theme.cardBgHover : (addModifyBtn.hovered ? theme.cardBgHover : theme.cardBg)
-                        border.color: addModifyBtn.pressed ? theme.accent : (addModifyBtn.hovered ? theme.cardBorderHover : theme.cardBorder)
-                        border.width: 1
-                        Behavior on color { ColorAnimation { duration: 150 } }
-                        Behavior on border.color { ColorAnimation { duration: 150 } }
-                    }
-
-                    onClicked: {
-                        if (typeof settingsViewModel === "undefined") return
-
-                        var newTime = root.selectedTime()
-                        if (root.modifyingIndex >= 0) {
-                            settingsViewModel.updateAlertTime(root.modifyingOldTime, newTime)
-                            root.modifyingIndex = -1
-                        } else {
-                            settingsViewModel.addAlertTime(newTime)
-                        }
-                    }
-                }
-
-                Button {
-                    id: cancelBtn
-                    visible: root.modifyingIndex >= 0
-                    text: qsTr("取消")
-                    font: theme.bodyFont
-                    flat: true
-                    implicitHeight: 32
-
-                    contentItem: Text {
-                        text: cancelBtn.text
-                        font: theme.bodyFont
+                    Text {
+                        text: qsTr("提前")
+                        font: theme.captionFont
                         color: theme.secondaryText
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        leftPadding: 12
-                        rightPadding: 12
+                        Layout.alignment: Qt.AlignVCenter
                     }
 
-                    background: Rectangle {
-                        radius: theme.radiusSmall
-                        color: cancelBtn.pressed ? theme.cardBgHover : (cancelBtn.hovered ? theme.cardBg : "transparent")
-                        border.color: cancelBtn.hovered ? theme.cardBorder : "transparent"
-                        border.width: 1
-                        Behavior on color { ColorAnimation { duration: 150 } }
-                        Behavior on border.color { ColorAnimation { duration: 150 } }
+                    ComboBox {
+                        id: advHourCombo
+                        model: advanceHourOptions()
+                        font: theme.captionFont
+                        flat: true
+                        implicitWidth: 58
+                        implicitHeight: 28
+                        currentIndex: 0
+
+                        contentItem: Text {
+                            text: advHourCombo.currentText
+                            font: theme.captionFont
+                            color: theme.primaryText
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        background: Rectangle {
+                            radius: theme.radiusSmall
+                            color: advHourCombo.hovered ? theme.cardBgHover : theme.cardBg
+                            border.color: advHourCombo.pressed ? theme.accentSecondary : (advHourCombo.hovered ? theme.cardBorderHover : theme.cardBorder)
+                            border.width: 1
+                            Behavior on color { ColorAnimation { duration: 150 } }
+                            Behavior on border.color { ColorAnimation { duration: 150 } }
+                        }
+
+                        popup: Popup {
+                            y: advHourCombo.height + 4
+                            width: advHourCombo.width
+                            implicitHeight: Math.min(contentItem.implicitHeight + 8, 180)
+                            padding: 4
+
+                            contentItem: ListView {
+                                clip: true
+                                implicitHeight: Math.min(contentHeight, 180)
+                                model: advHourCombo.popup.visible ? advHourCombo.delegateModel : null
+                                currentIndex: advHourCombo.highlightedIndex
+                                ScrollIndicator.vertical: ScrollIndicator {}
+                            }
+
+                            background: Rectangle {
+                                radius: theme.radiusMedium
+                                color: "#16162a"
+                                border.color: theme.cardBorderHover
+                                border.width: 1
+                            }
+                        }
+
+                        delegate: ItemDelegate {
+                            width: advHourCombo.width
+                            height: 26
+                            contentItem: Text {
+                                text: modelData
+                                font: theme.captionFont
+                                color: hovered ? theme.accentSecondary : theme.primaryText
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            background: Rectangle {
+                                color: hovered ? theme.cardBgHover : "transparent"
+                            }
+                        }
                     }
 
-                    onClicked: root.modifyingIndex = -1
+                    Text {
+                        text: qsTr("小时")
+                        font: theme.captionFont
+                        color: theme.secondaryText
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+
+                    ComboBox {
+                        id: advMinCombo
+                        model: advanceMinuteOptions()
+                        font: theme.captionFont
+                        flat: true
+                        implicitWidth: 58
+                        implicitHeight: 28
+                        currentIndex: 0
+
+                        contentItem: Text {
+                            text: advMinCombo.currentText
+                            font: theme.captionFont
+                            color: theme.primaryText
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        background: Rectangle {
+                            radius: theme.radiusSmall
+                            color: advMinCombo.hovered ? theme.cardBgHover : theme.cardBg
+                            border.color: advMinCombo.pressed ? theme.accentSecondary : (advMinCombo.hovered ? theme.cardBorderHover : theme.cardBorder)
+                            border.width: 1
+                            Behavior on color { ColorAnimation { duration: 150 } }
+                            Behavior on border.color { ColorAnimation { duration: 150 } }
+                        }
+
+                        popup: Popup {
+                            y: advMinCombo.height + 4
+                            width: advMinCombo.width
+                            implicitHeight: Math.min(contentItem.implicitHeight + 8, 180)
+                            padding: 4
+
+                            contentItem: ListView {
+                                clip: true
+                                implicitHeight: Math.min(contentHeight, 180)
+                                model: advMinCombo.popup.visible ? advMinCombo.delegateModel : null
+                                currentIndex: advMinCombo.highlightedIndex
+                                ScrollIndicator.vertical: ScrollIndicator {}
+                            }
+
+                            background: Rectangle {
+                                radius: theme.radiusMedium
+                                color: "#16162a"
+                                border.color: theme.cardBorderHover
+                                border.width: 1
+                            }
+                        }
+
+                        delegate: ItemDelegate {
+                            width: advMinCombo.width
+                            height: 26
+                            contentItem: Text {
+                                text: modelData
+                                font: theme.captionFont
+                                color: hovered ? theme.accentSecondary : theme.primaryText
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            background: Rectangle {
+                                color: hovered ? theme.cardBgHover : "transparent"
+                            }
+                        }
+                    }
+
+                    Text {
+                        text: qsTr("分钟")
+                        font: theme.captionFont
+                        color: theme.secondaryText
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+                }
+
+                // Buttons row
+                RowLayout {
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: theme.spacingSmall
+
+                    Button {
+                        id: addModifyBtn
+                        text: root.modifyingIndex >= 0 ? qsTr("保存") : qsTr("添加")
+                        font: theme.bodyFont
+                        flat: true
+                        implicitHeight: 32
+
+                        contentItem: Text {
+                            text: addModifyBtn.text
+                            font: theme.bodyFont
+                            color: theme.accent
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            leftPadding: 12
+                            rightPadding: 12
+                        }
+
+                        background: Rectangle {
+                            radius: theme.radiusSmall
+                            color: addModifyBtn.pressed ? theme.cardBgHover : (addModifyBtn.hovered ? theme.cardBgHover : theme.cardBg)
+                            border.color: addModifyBtn.pressed ? theme.accent : (addModifyBtn.hovered ? theme.cardBorderHover : theme.cardBorder)
+                            border.width: 1
+                            Behavior on color { ColorAnimation { duration: 150 } }
+                            Behavior on border.color { ColorAnimation { duration: 150 } }
+                        }
+
+                        onClicked: {
+                            if (typeof settingsViewModel === "undefined") return
+
+                            var newTime = root.selectedTime()
+                            var advMin = root.selectedAdvanceMinutes()
+                            if (root.modifyingIndex >= 0) {
+                                settingsViewModel.updateAlertTime(root.modifyingOldTime, newTime)
+                                settingsViewModel.setAdvanceMinutes(newTime, advMin)
+                                root.modifyingIndex = -1
+                            } else {
+                                settingsViewModel.addAlertTime(newTime)
+                                settingsViewModel.setAdvanceMinutes(newTime, advMin)
+                            }
+                        }
+                    }
+
+                    Button {
+                        id: cancelBtn
+                        visible: root.modifyingIndex >= 0
+                        text: qsTr("取消")
+                        font: theme.bodyFont
+                        flat: true
+                        implicitHeight: 32
+
+                        contentItem: Text {
+                            text: cancelBtn.text
+                            font: theme.bodyFont
+                            color: theme.secondaryText
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            leftPadding: 12
+                            rightPadding: 12
+                        }
+
+                        background: Rectangle {
+                            radius: theme.radiusSmall
+                            color: cancelBtn.pressed ? theme.cardBgHover : (cancelBtn.hovered ? theme.cardBg : "transparent")
+                            border.color: cancelBtn.hovered ? theme.cardBorder : "transparent"
+                            border.width: 1
+                            Behavior on color { ColorAnimation { duration: 150 } }
+                            Behavior on border.color { ColorAnimation { duration: 150 } }
+                        }
+
+                        onClicked: root.modifyingIndex = -1
+                    }
                 }
             }
         }

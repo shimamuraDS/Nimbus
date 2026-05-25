@@ -61,4 +61,17 @@ void SettingsViewModel::updateAlertTime(const QString& oldTime, const QString& n
     emit alertTimeListChanged();
 }
 
+QStringList SettingsViewModel::alertAdvanceList() const {
+    return Util::Config::getInstance().getAlertAdvanceMinutes();
+}
+
+void SettingsViewModel::setAdvanceMinutes(const QString& alertTime, int minutes) {
+    Util::Config::getInstance().setAdvanceMinutesFor(alertTime, minutes);
+    emit alertTimeListChanged();
+}
+
+int SettingsViewModel::getAdvanceMinutesFor(const QString& alertTime) {
+    return Util::Config::getInstance().getAdvanceMinutesFor(alertTime);
+}
+
 } // namespace ViewModel

@@ -12,6 +12,7 @@ class SettingsViewModel : public QObject {
     Q_PROPERTY(bool isAutoLocation READ isAutoLocation NOTIFY settingsChanged)
     Q_PROPERTY(QString manualCityName READ manualCityName NOTIFY settingsChanged)
     Q_PROPERTY(QStringList alertTimeList READ alertTimeList NOTIFY alertTimeListChanged)
+    Q_PROPERTY(QStringList alertAdvanceList READ alertAdvanceList NOTIFY alertTimeListChanged)
     Q_PROPERTY(bool isAutoStart READ isAutoStart NOTIFY settingsChanged)
 
 public:
@@ -21,6 +22,7 @@ public:
     QString manualCityName() const;
     bool isAutoStart() const;
     QStringList alertTimeList() const;
+    QStringList alertAdvanceList() const;
 
     Q_INVOKABLE void setAutoStart(bool autoStart);
     Q_INVOKABLE void setAutoLocation(bool isAuto);
@@ -28,6 +30,8 @@ public:
     Q_INVOKABLE void addAlertTime(const QString& time);
     Q_INVOKABLE void removeAlertTime(const QString& time);
     Q_INVOKABLE void updateAlertTime(const QString& oldTime, const QString& newTime);
+    Q_INVOKABLE void setAdvanceMinutes(const QString& alertTime, int minutes);
+    Q_INVOKABLE int getAdvanceMinutesFor(const QString& alertTime);
 
 signals:
     void settingsChanged();

@@ -37,7 +37,13 @@ public:
     void removeAlertTime(const QString& time);
     void updateAlertTime(const QString& oldTime, const QString& newTime);
 
+    QStringList getAlertAdvanceMinutes() const;
+    void setAlertAdvanceMinutes(const QStringList& minutes);
+    int getAdvanceMinutesFor(const QString& alertTime) const;
+    void setAdvanceMinutesFor(const QString& alertTime, int minutes);
+
 private:
+    void sortAlertsTogether(QStringList& times, QStringList& advances);
     Config();
     ~Config() = default;
 

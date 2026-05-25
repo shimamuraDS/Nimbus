@@ -85,29 +85,91 @@ void Config::setAlertTimes(const QStringList& times) {
     m_userSettings->setValue("Alerts/Times", times);
 }
 
+QStringList Config::getAlertAdvanceMinutes() const {
+    return m_userSettings->value("Alerts/AdvanceMinutes", QStringList()).toStringList();
+}
+
+void Config::setAlertAdvanceMinutes(const QStringList& minutes) {
+    m_userSettings->setValue("Alerts/AdvanceMinutes", minutes);
+}
+
+int Config::getAdvanceMinutesFor(const QString& alertTime) const {
+    QStringList times = getAlertTimes();
+    QStringList advances = getAlertAdvanceMinutes();
+    int idx = times.indexOf(alertTime);
+    if (idx >= 0 && idx < advances.size()) {
+        return advances[idx].toInt();
+    }
+    return 0;
+}
+
+void Config::setAdvanceMinutesFor(const QString& alertTime, int minutes) {
+    QStringList times = getAlertTimes();
+    QStringList advances = getAlertAdvanceMinutes();
+    int idx = times.indexOf(alertTime);
+    if (idx >= 0) {
+        if (advances.size() != times.size()) {
+            advances.clear();
+            for (int i = 0; i < times.size(); ++i) advances.append("0");
+        }
+        advances[idx] = QString::number(minutes);
+        setAlertAdvanceMinutes(advances);
+    }
+}
+
+void Config::sortAlertsTogether(QStringList& times, QStringList& advances) {
+    QList<QPair<QString, QString>> pairs;
+    for (int i = 0; i < times.size(); ++i) {
+        pairs.append({times[i], i < advances.size() ? advances[i] : "0"});
+    }
+    std::sort(pairs.begin(), pairs.end(), [](const auto& a, const auto& b) {
+        return a.first < b.first;
+    });
+    times.clear();
+    advances.clear();
+    for (const auto& p : pairs) {
+        times.append(p.first);
+        advances.append(p.second);
+    }
+}
+
 void Config::addAlertTime(const QString& time) {
     QStringList times = getAlertTimes();
     if (!times.contains(time)) {
+        QStringList advances = getAlertAdvanceMinutes();
         times.append(time);
-        times.sort();
+        advances.append("0");
+        sortAlertsTogether(times, advances);
         setAlertTimes(times);
+        setAlertAdvanceMinutes(advances);
     }
 }
 
 void Config::removeAlertTime(const QString& time) {
     QStringList times = getAlertTimes();
-    if (times.removeAll(time) > 0) {
+    QStringList advances = getAlertAdvanceMinutes();
+    int idx = times.indexOf(time);
+    if (idx >= 0) {
+        times.removeAt(idx);
+        if (idx < advances.size()) advances.removeAt(idx);
         setAlertTimes(times);
+        setAlertAdvanceMinutes(advances);
     }
 }
 
 void Config::updateAlertTime(const QString& oldTime, const QString& newTime) {
     QStringList times = getAlertTimes();
+    QStringList advances = getAlertAdvanceMinutes();
     int idx = times.indexOf(oldTime);
     if (idx >= 0 && oldTime != newTime && !times.contains(newTime)) {
+        if (advances.size() != times.size()) {
+            advances.clear();
+            for (int i = 0; i < times.size(); ++i) advances.append("0");
+        }
         times[idx] = newTime;
-        times.sort();
+        sortAlertsTogether(times, advances);
         setAlertTimes(times);
+        setAlertAdvanceMinutes(advances);
     }
 }
 
