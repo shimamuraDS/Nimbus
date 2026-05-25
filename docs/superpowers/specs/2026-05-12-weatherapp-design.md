@@ -54,13 +54,13 @@ WeatherApp/
 │   │   ├── FutureView.qml      # 未来7天天气界面
 │   │   └── SettingsView.qml    # 设置与提醒时间配置界面
 │   └── components/
-│       ├── Theme.qml           # 全局深色玻璃态视觉主题定义
+│       ├── Theme.qml           # 全局深色赛博朋克视觉主题定义(电光青/珊瑚/紫罗兰)
 │       ├── Toolbar.qml         # 顶部导航工具栏(透明融入背景)
 │       ├── WeatherCard.qml     # 天气卡片(早晚,玻璃态+阴影)
-│       ├── HourlyCard.qml      # 逐小时天气卡片(竖条,当前小时高亮)
+│       ├── HourlyCard.qml      # 逐小时天气卡片(竖条,内置天气图标,当前小时青色高亮)
 │       ├── NavigationButton.qml# 圆形导航按钮(hover+缩放动画)
 │       ├── TimePicker.qml      # 深色风格时间选择器
-│       └── CitySelector.qml    # 城市选择器(98个城市)
+│       └── CitySelector.qml    # 城市选择器(98个城市,带弹出动画和hover高亮)
 ├── resources/
 │   ├── resources.qrc           # Qt资源文件
 │   ├── app.rc                  # Windows资源(图标等)
@@ -147,6 +147,7 @@ WeatherApp/
 
 ### 2. QSettings 键值设计
 
+*   `General/AutoStart` (bool)：开机自启动开关状态（默认 true）。
 *   `Location/IsAuto` (bool)：自动定位开启状态。
 *   `Location/ManualAdcode` (int) / `Location/ManualCityName` (QString)：手动选择的城市信息。
 *   `Alerts/Times` (QStringList)：提醒时间点列表。
@@ -188,17 +189,19 @@ struct DailyWeather {
 *   **`SettingsViewModel` (ViewModel层)**：设置数据绑定，管理定位模式和提醒时间。
 *   **`TrayViewModel` (ViewModel层)**：托盘图标与通知窗口管理。
 *   **`NotificationManager` (服务层)**：封装 `QSystemTrayIcon` 或 WinRT API 发送系统通知。
-*   **`Config` (工具层)**：QSettings + config.ini 配置读写封装。
+*   **`Config` (工具层)**：QSettings + config.ini 配置读写封装，管理自动/手动定位、开机自启动（Windows 注册表 `HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run`）、提醒时间列表等持久化设置。
 
 ### 2. QML组件树与明确的交互状态机
 
-*   **`MainWindow`**：无边框窗口，宽乘高严格控制在 `< (Screen.width * Screen.height) / 12` 范围内。关联 `SystemTrayIcon` 实现驻留运行。
+*   **`MainWindow`**：无边框窗口，宽乘高严格控制在 `< (Screen.width * Screen.height) / 12` 范围内。双层辉光边框（外层半透明白，内层微光），深色赛博朋克渐变背景。关联 `SystemTrayIcon` 实现驻留运行。
 *   **`Toolbar`**：位于上方，最右方设置按键与 ViewModel 状态绑定，在设置页与主页之间切换图标样式（设置/返回）。
 *   **`StackView` (页面导航)**：
     *   `TodayView`：横向时间线渲染逐小时天气卡片（`HourlyCard`），自动高亮当前小时。左侧按键 Push 到 `PastView`，右侧按键 Push 到 `FutureView`。
-    *   `PastView`：渲染 `pastWeatherList` 列表，标题"过去 7 天"，暖金色卡片（`isPast: true`），右侧按键 Pop 返回主页。卡片水平居中，两侧对称间距。
-    *   `FutureView`：渲染 `futureWeatherList` 列表，标题"未来 7 天"，冷蓝色卡片（默认），左侧按键 Pop 返回主页。卡片水平居中，两侧对称间距。
+    *   `PastView`：渲染 `pastWeatherList` 列表，标题"过去 7 天"，暖珊瑚色卡片（`isPast: true`），右侧按键 Pop 返回主页。卡片水平居中，两侧对称间距。
+    *   `FutureView`：渲染 `futureWeatherList` 列表，标题"未来 7 天"，冷青色卡片（默认），左侧按键 Pop 返回主页。卡片水平居中，两侧对称间距。
     *   `SettingsView`（定位切换与提醒管理）：
+        *   整体采用 Flickable 可滚动布局，内容超出时自动显示滚动条。
+        *   **开机自启动开关**：页面顶部"开机自启动"标签 + Toggle Switch 控件（电光青色），切换时平滑动画。
         *   **状态 A（自动定位中）**：
             *   UI 展示：`自动定位：【当前城市名】` + 超链接样式的 `定位不准？` 按钮（蓝色下划线，仅此部分可点击）。
             *   交互行为：点击 `定位不准？` 切换至手动模式，显示城市下拉框。
