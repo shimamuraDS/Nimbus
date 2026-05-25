@@ -59,9 +59,9 @@ Item {
         if (minutes <= 0) return ""
         var h = Math.floor(minutes / 60)
         var m = minutes % 60
-        if (h > 0 && m > 0) return qsTr("提前") + h + qsTr("小时") + m + qsTr("分钟")
-        if (h > 0) return qsTr("提前") + h + qsTr("小时")
-        return qsTr("提前") + m + qsTr("分钟")
+        if (h > 0 && m > 0) return qsTr("未来") + h + qsTr("小时") + m + qsTr("分钟")
+        if (h > 0) return qsTr("未来") + h + qsTr("小时")
+        return qsTr("未来") + m + qsTr("分钟")
     }
 
     Flickable {
@@ -136,96 +136,7 @@ Item {
                 color: theme.divider
             }
 
-            // ── 1. Location settings ──
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: theme.spacingSmall
-
-                // ── Auto-location mode ──
-                Text {
-                    visible: typeof settingsViewModel !== "undefined" && settingsViewModel.isAutoLocation
-                    text: typeof settingsViewModel !== "undefined"
-                        ? qsTr("自动定位：【") + (typeof weatherViewModel !== "undefined" ? weatherViewModel.currentCity : "") + qsTr("】")
-                        : ""
-                    font: theme.bodyFont
-                    color: theme.primaryText
-                }
-
-                Text {
-                    visible: typeof settingsViewModel !== "undefined" && settingsViewModel.isAutoLocation
-                    text: qsTr("定位不准？")
-                    font {
-                        family: theme.bodyFont.family
-                        pointSize: theme.bodyFont.pointSize
-                        weight: theme.bodyFont.weight
-                        underline: !locLinkArea.containsMouse
-                    }
-                    color: locLinkArea.containsMouse ? theme.accent : theme.accentWarm
-                    Behavior on color { ColorAnimation { duration: 120 } }
-
-                    MouseArea {
-                        id: locLinkArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            if (typeof settingsViewModel !== "undefined") {
-                                settingsViewModel.setAutoLocation(false)
-                            }
-                        }
-                    }
-                }
-
-                // ── Manual mode ──
-                Text {
-                    visible: typeof settingsViewModel !== "undefined" && !settingsViewModel.isAutoLocation
-                    text: qsTr("选择城市：")
-                    font: theme.bodyFont
-                    color: theme.primaryText
-                }
-
-                CitySelector {
-                    visible: typeof settingsViewModel !== "undefined" && !settingsViewModel.isAutoLocation
-                    onCitySelected: function(adcode, name) {
-                        if (typeof settingsViewModel !== "undefined") {
-                            settingsViewModel.setManualCity(adcode, name)
-                        }
-                    }
-                }
-
-                Text {
-                    visible: typeof settingsViewModel !== "undefined" && !settingsViewModel.isAutoLocation
-                    text: qsTr("返回自动定位")
-                    font {
-                        family: theme.bodyFont.family
-                        pointSize: theme.bodyFont.pointSize
-                        weight: theme.bodyFont.weight
-                        underline: !autoLocLinkArea.containsMouse
-                    }
-                    color: autoLocLinkArea.containsMouse ? theme.accent : theme.accentWarm
-                    Behavior on color { ColorAnimation { duration: 120 } }
-
-                    MouseArea {
-                        id: autoLocLinkArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            if (typeof settingsViewModel !== "undefined") {
-                                settingsViewModel.setAutoLocation(true)
-                            }
-                        }
-                    }
-                }
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                height: 1
-                color: theme.divider
-            }
-
-            // ── 2. Alert time list ──
+            // ── Alert time list ──
             Text {
                 text: qsTr("设置提醒时间：")
                 font: theme.subtitleFont
@@ -272,7 +183,10 @@ Item {
 
                             Text {
                                 visible: advText.text !== ""
-                                text: formatAdvanceText(typeof settingsViewModel !== "undefined" ? settingsViewModel.getAdvanceMinutesFor(modelData) : 0)
+                                text: {
+                                    var advList = typeof settingsViewModel !== "undefined" ? settingsViewModel.alertAdvanceList : []
+                                    return formatAdvanceText(index < advList.length ? parseInt(advList[index]) : 0)
+                                }
                                 id: advText
                                 font: theme.captionFont
                                 color: theme.accentSecondary
@@ -520,7 +434,7 @@ Item {
                     spacing: theme.spacingSmall
 
                     Text {
-                        text: qsTr("提前")
+                        text: qsTr("时长")
                         font: theme.captionFont
                         color: theme.secondaryText
                         Layout.alignment: Qt.AlignVCenter

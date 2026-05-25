@@ -27,10 +27,85 @@ Rectangle {
             Layout.preferredHeight: 48
 
             Text {
-                text: qsTr("天气提醒助手")
+                text: qsTr("天气提醒")
                 font: theme.titleFont
                 color: theme.primaryText
                 Layout.alignment: Qt.AlignVCenter
+            }
+
+            Item { width: theme.spacingMedium; height: 1 }
+
+            // ── Location section ──
+            Text {
+                visible: typeof settingsViewModel !== "undefined" && settingsViewModel.isAutoLocation
+                text: typeof settingsViewModel !== "undefined"
+                    ? (typeof weatherViewModel !== "undefined" ? weatherViewModel.currentCity : "")
+                    : ""
+                font: theme.captionFont
+                color: theme.secondaryText
+                Layout.alignment: Qt.AlignVCenter
+            }
+
+            Text {
+                visible: typeof settingsViewModel !== "undefined" && settingsViewModel.isAutoLocation
+                text: qsTr("定位不准？")
+                font: theme.captionFont
+                color: locLinkArea.containsMouse ? theme.accent : theme.accentWarm
+                Layout.alignment: Qt.AlignVCenter
+
+                MouseArea {
+                    id: locLinkArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        if (typeof settingsViewModel !== "undefined") {
+                            settingsViewModel.setAutoLocation(false)
+                        }
+                    }
+                }
+
+                Behavior on color { ColorAnimation { duration: 120 } }
+            }
+
+            Text {
+                visible: typeof settingsViewModel !== "undefined" && !settingsViewModel.isAutoLocation
+                text: qsTr("城市：")
+                font: theme.captionFont
+                color: theme.secondaryText
+                Layout.alignment: Qt.AlignVCenter
+            }
+
+            CitySelector {
+                visible: typeof settingsViewModel !== "undefined" && !settingsViewModel.isAutoLocation
+                Layout.preferredWidth: 130
+                onCitySelected: function(adcode, name) {
+                    if (typeof settingsViewModel !== "undefined") {
+                        settingsViewModel.setManualCity(adcode, name)
+                    }
+                }
+            }
+
+            Text {
+                visible: typeof settingsViewModel !== "undefined" && !settingsViewModel.isAutoLocation
+                text: qsTr("自动定位")
+                font: theme.captionFont
+                color: autoLocLinkArea.containsMouse ? theme.accent : theme.accentSecondary
+                Layout.alignment: Qt.AlignVCenter
+
+                MouseArea {
+                    id: autoLocLinkArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        if (typeof settingsViewModel !== "undefined") {
+                            settingsViewModel.setAutoLocation(true)
+                        }
+                    }
+                }
+
+                Behavior on color { ColorAnimation { duration: 120 } }
             }
 
             Item { Layout.fillWidth: true }
