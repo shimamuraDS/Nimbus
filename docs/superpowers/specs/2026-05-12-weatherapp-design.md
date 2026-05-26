@@ -59,7 +59,8 @@ WeatherApp/
 │       ├── WeatherCard.qml     # 天气卡片(早晚,玻璃态+阴影)
 │       ├── HourlyCard.qml      # 逐小时天气卡片(竖条,内置天气图标,当前小时青色高亮)
 │       ├── NavigationButton.qml# 圆形导航按钮(hover+缩放动画)
-│       ├── TimePicker.qml      # 深色风格时间选择器
+│       ├── TimePickerDialog.qml # 时间提醒弹窗（ComboBox下拉+时长）
+│       ├── TimeComboBox.qml     # 主题化时间下拉选择器
 │       └── CitySelector.qml    # 城市选择器(98个城市,带弹出动画和hover高亮)
 ├── resources/
 │   ├── resources.qrc           # Qt资源文件
@@ -212,7 +213,8 @@ struct DailyWeather {
         *   时间管理：绑定 `alertTimeList`。常驻"添加时间点"按钮；添加后，每项尾部附带红色"删除"按钮。
 *   **`WeatherCard`**：天气卡片组件（240×190），显示早晚天气、气温、湿度及天气图标。通过 `isPast` 属性切换暖珊瑚（过去）与冷青（未来）背景色变体，hover 缩放效果（1.03x），图标悬浮动画（transform Translate）。
 *   **`NavigationButton`**：导航按钮组件（左/右箭头）。
-*   **`TimePicker`**：时间选择器组件。
+*   **`TimePickerDialog`**：时间提醒弹窗（Popup），包含提醒时间（Cyan）和提前监测时长（Purple）两个卡片式分区，使用 TimeComboBox 下拉选择器替代 SpinBox，保存按钮带渐变发光效果。
+*   **`TimeComboBox`**：主题化 ComboBox 组件，玻璃态暗色下拉面板，支持滚轮切换，数字自动补零显示。
 *   **`CitySelector`**：城市选择器组件。
 
 ### 3. 信号槽连接设计
@@ -304,7 +306,8 @@ qt_add_qml_module(WeatherApp URI "WeatherApp" VERSION 1.0
         qml/components/Toolbar.qml
         qml/components/WeatherCard.qml
         qml/components/NavigationButton.qml
-        qml/components/TimePicker.qml
+        qml/components/TimePickerDialog.qml
+        qml/components/TimeComboBox.qml
         qml/components/CitySelector.qml
         qml/views/TodayView.qml
         qml/views/PastView.qml
@@ -325,7 +328,8 @@ qt_add_qml_module(WeatherApp
         qml/components/Toolbar.qml
         qml/components/WeatherCard.qml
         qml/components/NavigationButton.qml
-        qml/components/TimePicker.qml
+        qml/components/TimePickerDialog.qml
+        qml/components/TimeComboBox.qml
         qml/components/CitySelector.qml
         qml/views/TodayView.qml
         qml/views/PastView.qml

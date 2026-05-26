@@ -56,11 +56,13 @@ qt_add_qml_module(WeatherApp
     QML_FILES
         qml/MainWindow.qml
         qml/components/Theme.qml
+        qml/components/TimePickerDialog.qml
         qml/components/Toolbar.qml
         qml/components/WeatherCard.qml
         qml/components/HourlyCard.qml
         qml/components/NavigationButton.qml
         qml/components/CitySelector.qml
+        qml/components/TimeComboBox.qml
         qml/views/TodayView.qml
         qml/views/PastView.qml
         qml/views/FutureView.qml
