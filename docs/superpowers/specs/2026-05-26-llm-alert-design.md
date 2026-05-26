@@ -12,7 +12,6 @@ option(WITH_LLM "Build with LLM-powered weather alerts" OFF)
 if(WITH_LLM)
     add_compile_definitions(WITH_LLM)
     set(LLM_SRCS
-        src/llm/LLMConfig.cpp
         src/llm/LLMClient.cpp
         src/llm/LLMAlertGenerator.cpp
     )
@@ -21,9 +20,7 @@ endif()
 set(APP_SRCS ... ${LLM_SRCS})
 ```
 
-- `WITH_LLM=ON` 时定义 C++ 预处理器宏 `WITH_LLM`，并编译 `src/llm/` 下的源文件
-- `WITH_LLM=OFF` 时不编译任何 LLM 相关代码，标准版二进制零冗余
-- AI 版专有的 QML 文件（`LLMSettingsPane.qml`）仅在 `WITH_LLM=ON` 时加入 `qt_add_qml_module` 的 `QML_FILES`
+AI 版专有 QML 文件（`LLMSettingsPane.qml`）通过 `list(APPEND)` 条件加入 `qt_add_qml_module` 的 `QML_FILES`。
 
 **构建命令：**
 ```
@@ -33,167 +30,132 @@ cmake -DWITH_LLM=OFF -B build-standard
 
 ## 2. C++ 架构
 
+### LLM 配置（整合到现有 `Config` 单例）
+
+LLM 配置方法通过 `#ifdef WITH_LLM` 条件编译到 `Util::Config` 中，无需额外类。
+
+`QSettings` 中 `LLM/` 组：
+```
+LLM/Enabled   = false
+LLM/ApiUrl    = "https://api.deepseek.com"
+LLM/ApiKey    = ""           (XOR + SHA-256 混淆存储)
+LLM/ModelName = "deepseek-v4-pro"
+```
+
+天气 API Key 也可在 UI 中修改：`API/WeatherKey`（优先于 `config.ini` 的 `API/DeveloperKey`）。
+
 ### 新增模块 `src/llm/`
 
 | 文件 | 职责 |
 |------|------|
-| `LLMConfig.h/.cpp` | LLM 配置读写：API URL、Key、Model、Enabled 开关 |
-| `LLMClient.h/.cpp` | HTTP 客户端，发送 OpenAI 兼容 `/chat/completions` 请求 |
-| `LLMAlertGenerator.h/.cpp` | 构建天气→prompt→调用 LLMClient→解析响应文本 |
+| `LLMClient.h/.cpp` | HTTP POST `/chat/completions`，OpenAI 兼容格式，含 DeepSeek thinking/reasoning_effort 支持，10 秒超时 |
+| `LLMAlertGenerator.h/.cpp` | 天气 JSON → prompt → 调用 LLMClient → 回调返回文本 |
 
-### LLMConfig
+### API Key 安全存储
 
-在 `QSettings` 中新增 `LLM/` 组：
-
-```
-LLM/ApiUrl    = "https://api.openai.com/v1"
-LLM/ApiKey    = ""           (DPAPI 加密存储)
-LLM/ModelName = "gpt-4o-mini"
-LLM/Enabled   = false
-```
-
-用户可在设置界面修改。`WITH_LLM=OFF` 时整个类不存在。
-
-### LLMClient
-
-基于现有 `Network::HttpClient` 模式：POST 请求到 `{ApiUrl}/chat/completions`，OpenAI 兼容格式的 JSON body，接收流式或非流式响应，提取 `choices[0].message.content`。支持配置自定义 API 地址（OpenAI / DeepSeek / 通义千问 / 本地 Ollama 等任意兼容接口）。
-
-超时时间：10 秒。
-
-### LLMAlertGenerator
-
-接收天气数据（`QVariantMap`：当前天气、温度、湿度、风速、未来数小时逐小时预报），构造中文 prompt，包含：
-- 当前天气状况摘要
-- 未来数小时预报数据（JSON 格式）
-- 生成要求（简洁、实用、中文、含建议）
-
-调用 `LLMClient::chat()` 并返回清理后的文本。
+使用纯 Qt 方案：`QSysInfo::machineUniqueId()` → `QCryptographicHash::Sha256` → XOR 混淆。无需 Windows DPAPI 或额外库依赖。混淆后 Base64 存入 `QSettings`。
 
 ### AlertService 改动
 
 ```cpp
 void AlertService::checkAlerts() {
-    // ... 时间判断逻辑不变 ...
+    // Tier 1: 官方预警 — 不变
+
+    // Tier 2: 逐小时天气检查
+    // 收集 segments、构建 fallback lambda
 
 #ifdef WITH_LLM
-    if (LLMConfig::getInstance().isEnabled()) {
-        QString text = LLMAlertGenerator::generateAlert(weatherData, advanceMinutes);
-        if (text.isEmpty()) {
-            // 降级：API 失败或超时，回退固定话术
-            text = buildFallbackAlert(weatherData);
-        }
-        showNotification(text);
-    } else {
-        showNotification(buildFallbackAlert(weatherData));
+    if (Config::getInstance().isLLMEnabled()) {
+        auto* gen = new LLMAlertGenerator(this);
+        gen->generateAlert(hourlyData, currentWeather, durationMin,
+            [this, fallback, gen](const QString& text) {
+                showNotification(text.isEmpty() ? fallback() : text);
+                gen->deleteLater();
+            });
+        return;
     }
-#else
-    showNotification(buildFallbackAlert(weatherData));  // 当前逻辑不变
 #endif
+    showNotification(fallback());  // 标准版路径
 }
 ```
 
-降级策略：LLM API 调用失败（网络错误、超时、配额不足等），自动回退到固定话术提醒，确保提醒不丢失。
+### SettingsViewModel 扩展
+
+| 属性 | 条件 | 说明 |
+|------|------|------|
+| `weatherApiKey` | 全局 | 天气 API Key，UI 可编辑 |
+| `llmEnabled` | WITH_LLM | AI 功能开关 |
+| `llmApiUrl` | WITH_LLM | LLM API 地址 |
+| `llmApiKey` | WITH_LLM | LLM API Key |
+| `llmModelName` | WITH_LLM | 模型名称 |
+| `llmTestResult` | WITH_LLM | 连接测试结果（连接中/成功/失败） |
+| `testLLMConnection()` | WITH_LLM | 异步测试连接，回调更新 llmTestResult |
 
 ## 3. QML 层
 
+### APISettingsPane.qml
+
+可折叠的"API 设置"区域（默认收起），展开后包含：
+
+- **天气 API**：Cyan 圆点标签 + API Key 密码输入框
+- **AI 天气提醒**（Loader 加载 `LLMSettingsPane.qml`）：Coral 圆点标签 + 启用开关 + URL/Key/Model 输入 + 测试连接按钮
+
+两个子区域左对齐（`theme.spacingLarge` margin），格式一致。
+
 ### LLMSettingsPane.qml
 
-仅 AI 版本编译打包。包含：
+仅 AI 版本编译打包，标准版 Loader 静默失败。包含：启用开关、API 地址、API Key、模型名称、测试连接按钮（结果实时显示在按钮右侧）。
 
-- LLM 功能启用/关闭开关
-- API 地址输入框（默认 `https://api.openai.com/v1`）
-- API Key 输入框（密码模式，密文显示）
-- 模型名称输入框
-- "测试连接"按钮
+### SettingsView.qml 布局
 
-### SettingsView.qml 集成
-
-使用 `Loader` 动态加载，标准版文件不存在时静默失败：
-
-```qml
-Loader {
-    Layout.fillWidth: true
-    source: "LLMSettingsPane.qml"
-}
-```
-
-### C++ ViewModel 扩展
-
-`SettingsViewModel` 中 `#ifdef WITH_LLM` 条件下新增：
-
-```cpp
-#ifdef WITH_LLM
-    Q_INVOKABLE void testLLMConnection();
-    Q_PROPERTY(QString llmApiUrl ...)
-    Q_PROPERTY(QString llmApiKey ...)
-    Q_PROPERTY(QString llmModelName ...)
-    Q_PROPERTY(bool llmEnabled ...)
-#endif
-```
-
-QML 中用 `typeof` 做防御检查：`typeof settingsViewModel.llmEnabled !== "undefined"`。
+从上到下：开机自启动 → API 设置（可折叠）→ 分割线 → 提醒时间列表 → 添加按钮
 
 ## 4. 提醒生成流程
 
 ```
 AlertService 60s 定时器
-  → 到达提醒时间点
-  → WeatherCacheManager 取天气数据
+  → 到达提醒时间点 → 取天气数据
 
-  ┌─ WITH_LLM=OFF ────────────────────────
-  │  固定话术模板 → NotificationManager
+  ┌─ WITH_LLM=OFF ────────────────
+  │  固定话术 → NotificationManager
   │
-  └─ WITH_LLM=ON ─────────────────────────
-      用户未启用 LLM → 固定话术模板
-      用户启用了 LLM →
+  └─ WITH_LLM=ON ─────────────────
+      用户未启用 → 固定话术
+      用户启用 →
           LLMAlertGenerator::generateAlert()
-            → LLMClient::chat()  ─10s超时─→ 成功 → 自然语言文本
-              ↓ 失败                           ↓
-              固定话术（降级）           NotificationManager
+            → LLMClient::chat() ─10s─→ 成功 → LLM 文本
+              ↓ 失败                     ↓
+              固定话术（降级）    NotificationManager
 ```
 
-## 5. API Key 安全存储
+## 5. 发布
 
-使用 Windows DPAPI 加密 API Key：
+| 构建配置 | 产物 | 二进制大小 |
+|----------|------|-----------|
+| `-DWITH_LLM=OFF` | 标准版 | ~32 MB |
+| `-DWITH_LLM=ON` | AI 版 | ~35 MB |
 
-- `CryptProtectData()` 加密后写入 `QSettings`
-- `CryptUnprotectData()` 读取时解密
-- 仅当前用户在当前机器上可解密
-- `WITH_LLM=OFF` 时不编译加密相关代码
+版本号相同，同一提交产出，避免分支分叉。AI 版在未启用 LLM 时无额外运行时开销。
 
-代码量约 50-80 行，无需额外依赖。
-
-## 6. 发布
-
-CI 一次构建两个包：
-
-| 构建配置 | 产物 | 包名 |
-|----------|------|------|
-| `-DWITH_LLM=OFF` | 标准版 | `WeatherApp_Setup_v1.x.exe` |
-| `-DWITH_LLM=ON` | AI 版 | `WeatherApp_AI_Setup_v1.x.exe` |
-
-版本号相同，同一提交产出，避免分支分叉。
-
-## 7. 文件清单
+## 6. 文件清单
 
 ### 新增文件
 
 | 文件 | 条件 |
 |------|------|
-| `src/llm/LLMConfig.h` | WITH_LLM=ON |
-| `src/llm/LLMConfig.cpp` | WITH_LLM=ON |
 | `src/llm/LLMClient.h` | WITH_LLM=ON |
 | `src/llm/LLMClient.cpp` | WITH_LLM=ON |
 | `src/llm/LLMAlertGenerator.h` | WITH_LLM=ON |
 | `src/llm/LLMAlertGenerator.cpp` | WITH_LLM=ON |
 | `qml/components/LLMSettingsPane.qml` | WITH_LLM=ON |
+| `qml/components/APISettingsPane.qml` | 全局 |
 
 ### 修改文件
 
 | 文件 | 改动 |
 |------|------|
-| `CMakeLists.txt` | 新增 `option(WITH_LLM)`、条件源文件、条件 QML 文件 |
-| `src/service/AlertService.cpp` | `#ifdef WITH_LLM` 分支，LLM 路径+降级逻辑 |
-| `src/viewmodel/SettingsViewModel.h/.cpp` | `#ifdef WITH_LLM` 新增 LLM 配置属性和方法 |
-| `qml/views/SettingsView.qml` | 新增 `Loader` 加载 `LLMSettingsPane` |
-| `src/main.cpp` | `WITH_LLM=ON` 时初始化 LLMConfig（如有需要） |
+| `CMakeLists.txt` | `option(WITH_LLM)` + 条件源文件 + 条件 QML 文件 |
+| `src/util/Config.h/.cpp` | `#ifdef WITH_LLM` LLM 配置方法 + `weatherApiKey` + XOR 混淆 |
+| `src/service/AlertService.cpp` | `#ifdef WITH_LLM` LLM 路径 + 降级 fallback |
+| `src/viewmodel/SettingsViewModel.h/.cpp` | `weatherApiKey` + `#ifdef WITH_LLM` LLM 属性 + `testLLMConnection` |
+| `qml/views/SettingsView.qml` | APISettingsPane 替代旧 LLM Loader |
