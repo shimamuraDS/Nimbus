@@ -1,5 +1,8 @@
 #include "SettingsViewModel.h"
 #include "../util/Config.h"
+#ifdef WITH_LLM
+#include "../llm/LLMClient.h"
+#endif
 
 namespace ViewModel {
 
@@ -13,6 +16,15 @@ bool SettingsViewModel::isAutoStart() const {
 
 void SettingsViewModel::setAutoStart(bool autoStart) {
     Util::Config::getInstance().setAutoStart(autoStart);
+    emit settingsChanged();
+}
+
+QString SettingsViewModel::weatherApiKey() const {
+    return Util::Config::getInstance().getWeatherApiKey();
+}
+
+void SettingsViewModel::setWeatherApiKey(const QString& key) {
+    Util::Config::getInstance().setWeatherApiKey(key);
     emit settingsChanged();
 }
 
@@ -74,5 +86,61 @@ void SettingsViewModel::setAdvanceMinutes(const QString& alertTime, int minutes)
 int SettingsViewModel::getAdvanceMinutesFor(const QString& alertTime) {
     return Util::Config::getInstance().getAdvanceMinutesFor(alertTime);
 }
+
+#ifdef WITH_LLM
+
+bool SettingsViewModel::isLLMEnabled() const {
+    return Util::Config::getInstance().isLLMEnabled();
+}
+
+void SettingsViewModel::setLLMEnabled(bool enabled) {
+    Util::Config::getInstance().setLLMEnabled(enabled);
+    emit llmSettingsChanged();
+}
+
+QString SettingsViewModel::llmApiUrl() const {
+    return Util::Config::getInstance().getLLMApiUrl();
+}
+
+void SettingsViewModel::setLLMApiUrl(const QString& url) {
+    Util::Config::getInstance().setLLMApiUrl(url);
+    emit llmSettingsChanged();
+}
+
+QString SettingsViewModel::llmApiKey() const {
+    return Util::Config::getInstance().getLLMApiKey();
+}
+
+void SettingsViewModel::setLLMApiKey(const QString& key) {
+    Util::Config::getInstance().setLLMApiKey(key);
+    emit llmSettingsChanged();
+}
+
+QString SettingsViewModel::llmModelName() const {
+    return Util::Config::getInstance().getLLMModelName();
+}
+
+void SettingsViewModel::setLLMModelName(const QString& model) {
+    Util::Config::getInstance().setLLMModelName(model);
+    emit llmSettingsChanged();
+}
+
+void SettingsViewModel::testLLMConnection() {
+    setLLMTestResult(QString::fromUtf8("连接中..."));
+    auto& config = Util::Config::getInstance();
+    auto* client = new LLM::LLMClient(this);
+    client->chat(config.getLLMApiUrl(), config.getLLMApiKey(),
+                 config.getLLMModelName(),
+                 QString::fromUtf8("你好，请回复'连接成功'。"),
+                 [this, client](const QString& text) {
+        if (text.isEmpty())
+            setLLMTestResult(QString::fromUtf8("连接失败"));
+        else
+            setLLMTestResult(QString::fromUtf8("连接成功"));
+        client->deleteLater();
+    }, 8000);
+}
+
+#endif
 
 } // namespace ViewModel

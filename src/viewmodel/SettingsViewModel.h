@@ -14,6 +14,7 @@ class SettingsViewModel : public QObject {
     Q_PROPERTY(QStringList alertTimeList READ alertTimeList NOTIFY alertTimeListChanged)
     Q_PROPERTY(QStringList alertAdvanceList READ alertAdvanceList NOTIFY alertTimeListChanged)
     Q_PROPERTY(bool isAutoStart READ isAutoStart NOTIFY settingsChanged)
+    Q_PROPERTY(QString weatherApiKey READ weatherApiKey WRITE setWeatherApiKey NOTIFY settingsChanged)
 
 public:
     explicit SettingsViewModel(Service::LocationService* locationService, QObject* parent = nullptr);
@@ -21,6 +22,8 @@ public:
     bool isAutoLocation() const;
     QString manualCityName() const;
     bool isAutoStart() const;
+    QString weatherApiKey() const;
+    void setWeatherApiKey(const QString& key);
     QStringList alertTimeList() const;
     QStringList alertAdvanceList() const;
 
@@ -33,12 +36,42 @@ public:
     Q_INVOKABLE void setAdvanceMinutes(const QString& alertTime, int minutes);
     Q_INVOKABLE int getAdvanceMinutesFor(const QString& alertTime);
 
+#ifdef WITH_LLM
+    Q_PROPERTY(bool llmEnabled READ isLLMEnabled WRITE setLLMEnabled NOTIFY llmSettingsChanged)
+    Q_PROPERTY(QString llmApiUrl READ llmApiUrl WRITE setLLMApiUrl NOTIFY llmSettingsChanged)
+    Q_PROPERTY(QString llmApiKey READ llmApiKey WRITE setLLMApiKey NOTIFY llmSettingsChanged)
+    Q_PROPERTY(QString llmModelName READ llmModelName WRITE setLLMModelName NOTIFY llmSettingsChanged)
+
+    bool isLLMEnabled() const;
+    void setLLMEnabled(bool enabled);
+    QString llmApiUrl() const;
+    void setLLMApiUrl(const QString& url);
+    QString llmApiKey() const;
+    void setLLMApiKey(const QString& key);
+    QString llmModelName() const;
+    void setLLMModelName(const QString& model);
+
+    Q_PROPERTY(QString llmTestResult READ llmTestResult NOTIFY llmTestResultChanged)
+
+    Q_INVOKABLE void testLLMConnection();
+
+    QString llmTestResult() const { return m_llmTestResult; }
+    void setLLMTestResult(const QString& r) { if (r != m_llmTestResult) { m_llmTestResult = r; emit llmTestResultChanged(); } }
+#endif
+
 signals:
     void settingsChanged();
     void alertTimeListChanged();
+#ifdef WITH_LLM
+    void llmSettingsChanged();
+    void llmTestResultChanged();
+#endif
 
 private:
     Service::LocationService* m_locationService;
+#ifdef WITH_LLM
+    QString m_llmTestResult;
+#endif
 };
 
 } // namespace ViewModel

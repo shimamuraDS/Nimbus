@@ -1,4 +1,8 @@
 #include "Config.h"
+#ifdef WITH_LLM
+#include <QCryptographicHash>
+#include <QSysInfo>
+#endif
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
@@ -33,7 +37,18 @@ Config::Config() {
 }
 
 QString Config::getTencentApiKey() const {
+    // 优先使用用户设置，没有则回退到 config.ini
+    QString userKey = m_userSettings->value("API/WeatherKey", "").toString();
+    if (!userKey.isEmpty()) return userKey;
     return m_iniSettings->value("API/DeveloperKey", "").toString();
+}
+
+QString Config::getWeatherApiKey() const {
+    return getTencentApiKey();
+}
+
+void Config::setWeatherApiKey(const QString& key) {
+    m_userSettings->setValue("API/WeatherKey", key);
 }
 
 bool Config::isAutoLocation() const {
@@ -172,5 +187,59 @@ void Config::updateAlertTime(const QString& oldTime, const QString& newTime) {
         setAlertAdvanceMinutes(advances);
     }
 }
+
+#ifdef WITH_LLM
+
+QByteArray Config::obfuscateKey(const QByteArray& data) const {
+    QByteArray machineId = QSysInfo::machineUniqueId();
+    QByteArray hash = QCryptographicHash::hash(machineId, QCryptographicHash::Sha256);
+    QByteArray result = data;
+    for (int i = 0; i < result.size(); ++i)
+        result[i] = result[i] ^ hash[i % hash.size()];
+    return result;
+}
+
+bool Config::isLLMEnabled() const {
+    return m_userSettings->value("LLM/Enabled", false).toBool();
+}
+
+void Config::setLLMEnabled(bool enabled) {
+    m_userSettings->setValue("LLM/Enabled", enabled);
+}
+
+QString Config::getLLMApiUrl() const {
+    return m_userSettings->value("LLM/ApiUrl", "https://api.deepseek.com").toString();
+}
+
+void Config::setLLMApiUrl(const QString& url) {
+    m_userSettings->setValue("LLM/ApiUrl", url);
+}
+
+QString Config::getLLMApiKey() const {
+    QByteArray obfuscated = QByteArray::fromBase64(
+        m_userSettings->value("LLM/ApiKey", "").toString().toUtf8());
+    if (obfuscated.isEmpty()) return QString();
+    QByteArray plain = obfuscateKey(obfuscated);
+    return QString::fromUtf8(plain);
+}
+
+void Config::setLLMApiKey(const QString& key) {
+    if (key.isEmpty()) {
+        m_userSettings->setValue("LLM/ApiKey", "");
+        return;
+    }
+    QByteArray obfuscated = obfuscateKey(key.toUtf8());
+    m_userSettings->setValue("LLM/ApiKey", QString::fromLatin1(obfuscated.toBase64()));
+}
+
+QString Config::getLLMModelName() const {
+    return m_userSettings->value("LLM/ModelName", "deepseek-v4-pro").toString();
+}
+
+void Config::setLLMModelName(const QString& model) {
+    m_userSettings->setValue("LLM/ModelName", model);
+}
+
+#endif
 
 } // namespace Util

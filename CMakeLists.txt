@@ -10,6 +10,9 @@ set(CMAKE_AUTOUIC ON)
 # 查找所需依赖：Widgets用于系统托盘，Network用于腾讯API请求
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Qml Quick Network Widgets)
 
+# LLM 功能开关：默认关闭，cmake -DWITH_LLM=ON 开启
+option(WITH_LLM "Build with LLM-powered weather alerts" OFF)
+
 # 预定义各个阶段的源文件变量
 set(TOOL_SRCS
     src/util/Config.cpp
@@ -36,6 +39,14 @@ set(VM_SRCS
     src/viewmodel/TrayViewModel.cpp
 )
 
+if(WITH_LLM)
+    add_compile_definitions(WITH_LLM)
+    set(LLM_SRCS
+        src/llm/LLMClient.cpp
+        src/llm/LLMAlertGenerator.cpp
+    )
+endif()
+
 set(APP_SRCS
     src/main.cpp
     ${TOOL_SRCS}
@@ -43,6 +54,7 @@ set(APP_SRCS
     ${NET_SRCS}
     ${SERVICE_SRCS}
     ${VM_SRCS}
+    ${LLM_SRCS}
     resources/resources.qrc
 )
 
@@ -50,23 +62,31 @@ set(APP_SRCS
 add_executable(WeatherApp WIN32 ${APP_SRCS})
 
 # 注册 QML 模块
+set(WEATHER_APP_QML_FILES
+    qml/MainWindow.qml
+    qml/components/Theme.qml
+    qml/components/TimePickerDialog.qml
+    qml/components/Toolbar.qml
+    qml/components/WeatherCard.qml
+    qml/components/HourlyCard.qml
+    qml/components/NavigationButton.qml
+    qml/components/CitySelector.qml
+    qml/components/TimeComboBox.qml
+    qml/components/APISettingsPane.qml
+    qml/views/TodayView.qml
+    qml/views/PastView.qml
+    qml/views/FutureView.qml
+    qml/views/SettingsView.qml
+)
+
+if(WITH_LLM)
+    list(APPEND WEATHER_APP_QML_FILES qml/components/LLMSettingsPane.qml)
+endif()
+
 qt_add_qml_module(WeatherApp
     URI "WeatherApp"
     VERSION 1.0
-    QML_FILES
-        qml/MainWindow.qml
-        qml/components/Theme.qml
-        qml/components/TimePickerDialog.qml
-        qml/components/Toolbar.qml
-        qml/components/WeatherCard.qml
-        qml/components/HourlyCard.qml
-        qml/components/NavigationButton.qml
-        qml/components/CitySelector.qml
-        qml/components/TimeComboBox.qml
-        qml/views/TodayView.qml
-        qml/views/PastView.qml
-        qml/views/FutureView.qml
-        qml/views/SettingsView.qml
+    QML_FILES ${WEATHER_APP_QML_FILES}
 )
 
 # 链接核心库
@@ -79,7 +99,7 @@ target_link_libraries(WeatherApp PRIVATE
     Qt6::Widgets
 )
 
-# Windows: link Shell32 for SHAppBarMessage (auto-hide taskbar detection)
+# Windows: link Shell32 for SHAppBarMessage, Crypt32 for DPAPI (LLM key encryption)
 if(WIN32)
     target_link_libraries(WeatherApp PRIVATE Shell32)
 endif()

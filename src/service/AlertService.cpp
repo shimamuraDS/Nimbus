@@ -4,6 +4,9 @@
 #include "../util/TimeUtil.h"
 #include "../util/WeatherCode.h"
 #include "../data/WeatherCacheManager.h"
+#ifdef WITH_LLM
+#include "../llm/LLMAlertGenerator.h"
+#endif
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QDateTime>
@@ -89,38 +92,59 @@ void AlertService::checkAlerts() {
 
     if (segments.isEmpty()) return;
 
-    // Build notification
-    QString title;
-    QString content;
-    content = QString::fromUtf8("当前天气：") + currentWeather + "\n";
+    // Build fallback notification (fixed template, always available)
+    auto buildFallback = [&]() -> QPair<QString, QString> {
+        QString title;
+        QString content;
+        content = QString::fromUtf8("当前天气：") + currentWeather + "\n";
 
-    if (durationMin > 0) {
-        int dH = durationMin / 60;
-        int dM = durationMin % 60;
-        QString durStr;
-        if (dH > 0 && dM > 0)
-            durStr = QString::number(dH) + QString::fromUtf8("小时") + QString::number(dM) + QString::fromUtf8("分钟");
-        else if (dH > 0)
-            durStr = QString::number(dH) + QString::fromUtf8("小时");
-        else
-            durStr = QString::number(dM) + QString::fromUtf8("分钟");
+        if (durationMin > 0) {
+            int dH = durationMin / 60;
+            int dM = durationMin % 60;
+            QString durStr;
+            if (dH > 0 && dM > 0)
+                durStr = QString::number(dH) + QString::fromUtf8("小时") + QString::number(dM) + QString::fromUtf8("分钟");
+            else if (dH > 0)
+                durStr = QString::number(dH) + QString::fromUtf8("小时");
+            else
+                durStr = QString::number(dM) + QString::fromUtf8("分钟");
 
-        title = QString::fromUtf8("天气提醒：未来") + durStr + QString::fromUtf8("内天气变化");
+            title = QString::fromUtf8("天气提醒：未来") + durStr + QString::fromUtf8("内天气变化");
 
-        for (const auto& seg : segments) {
-            content += seg.time + QString::fromUtf8("：") + seg.desc + "\n";
+            for (const auto& seg : segments) {
+                content += seg.time + QString::fromUtf8("：") + seg.desc + "\n";
+            }
+            content += QString::fromUtf8("请提前做好防范。");
+        } else {
+            auto& seg = segments.first();
+            title = QString::fromUtf8("天气提醒：未来1小时将有") + seg.desc;
+            content += QString::fromUtf8("预计 ") + seg.time
+                + QString::fromUtf8(" 左右将出现") + seg.desc
+                + QString::fromUtf8("，请提前做好防范。");
         }
-        content += QString::fromUtf8("请提前做好防范。");
-    } else {
-        // Default: just show the first match (backward compatible behavior)
-        auto& seg = segments.first();
-        title = QString::fromUtf8("天气提醒：未来1小时将有") + seg.desc;
-        content += QString::fromUtf8("预计 ") + seg.time
-            + QString::fromUtf8(" 左右将出现") + seg.desc
-            + QString::fromUtf8("，请提前做好防范。");
-    }
+        return {title, content};
+    };
 
-    NotificationManager::getInstance().showWeatherAlert(title, content);
+#ifdef WITH_LLM
+    if (Util::Config::getInstance().isLLMEnabled()) {
+        auto* generator = new LLM::LLMAlertGenerator(this);
+        generator->generateAlert(hourlyData, currentWeather, durationMin,
+            [this, buildFallback, generator](const QString& llmText) {
+                if (llmText.isEmpty()) {
+                    auto fb = buildFallback();
+                    NotificationManager::getInstance().showWeatherAlert(fb.first, fb.second);
+                } else {
+                    NotificationManager::getInstance().showWeatherAlert(
+                        QString::fromUtf8("天气提醒"), llmText);
+                }
+                generator->deleteLater();
+            });
+        return;
+    }
+#endif
+
+    auto fb = buildFallback();
+    NotificationManager::getInstance().showWeatherAlert(fb.first, fb.second);
 }
 
 } // namespace Service

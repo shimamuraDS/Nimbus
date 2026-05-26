@@ -1,0 +1,105 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+
+Item {
+    id: root
+    Layout.fillWidth: true
+    implicitHeight: headerRow.height + (expanded ? contentCol.implicitHeight + theme.spacingMedium : 0)
+
+    Theme { id: theme }
+    property bool expanded: false
+
+    // ── Header ──
+    RowLayout {
+        id: headerRow
+        width: parent.width
+        spacing: theme.spacingSmall
+
+        Rectangle { width: 8; height: 8; radius: 4; color: theme.mutedText }
+
+        Text {
+            text: qsTr("API 设置")
+            font: theme.bodyFont
+            color: theme.primaryText
+            Layout.alignment: Qt.AlignVCenter
+        }
+
+        Item { Layout.fillWidth: true }
+
+        Text {
+            text: expanded ? "▾" : "▸"
+            font: theme.captionFont
+            color: theme.secondaryText
+            Layout.alignment: Qt.AlignVCenter
+            Behavior on rotation { NumberAnimation { duration: 150 } }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.expanded = !root.expanded
+        }
+    }
+
+    // ── Expanded content ──
+    ColumnLayout {
+        id: contentCol
+        anchors.top: headerRow.bottom
+        anchors.topMargin: theme.spacingMedium
+        anchors.left: parent.left
+        anchors.right: parent.right
+        visible: expanded
+        spacing: theme.spacingMedium
+
+        // ── Weather API ──
+        ColumnLayout {
+            Layout.fillWidth: true
+            Layout.leftMargin: theme.spacingLarge
+            Layout.rightMargin: theme.spacingLarge
+            spacing: theme.spacingSmall
+
+            RowLayout {
+                spacing: theme.spacingTiny
+                Rectangle { width: 8; height: 8; radius: 4; color: theme.accent }
+                Text {
+                    text: qsTr("天气 API")
+                    font: theme.captionFont
+                    color: theme.secondaryText
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                implicitHeight: 34
+                radius: theme.radiusSmall
+                color: theme.cardBg
+                border.color: weatherKeyInput.activeFocus ? theme.accent : theme.cardBorder
+                border.width: 1
+
+                TextInput {
+                    id: weatherKeyInput
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    text: typeof settingsViewModel !== "undefined" ? settingsViewModel.weatherApiKey : ""
+                    font: theme.bodyFont
+                    color: theme.primaryText
+                    echoMode: TextInput.Password
+                    passwordCharacter: "•"
+                    verticalAlignment: Text.AlignVCenter
+                    onEditingFinished: {
+                        if (typeof settingsViewModel !== "undefined")
+                            settingsViewModel.weatherApiKey = text
+                    }
+                }
+            }
+        }
+
+        // ── LLM API (AI version only) ──
+        Loader {
+            id: llmLoader
+            Layout.fillWidth: true
+            source: "LLMSettingsPane.qml"
+        }
+    }
+}

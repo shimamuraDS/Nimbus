@@ -10,51 +10,7 @@ Item {
 
     objectName: "SettingsView"
 
-    // 生成小时选项 00 ~ 23
-    function generateHourOptions() {
-        var options = []
-        for (var h = 0; h < 24; h++) {
-            options.push(h.toString().padStart(2, '0'))
-        }
-        return options
-    }
-
-    // 生成分钟选项 00 ~ 59
-    function generateMinuteOptions() {
-        var options = []
-        for (var m = 0; m < 60; m++) {
-            options.push(m.toString().padStart(2, '0'))
-        }
-        return options
-    }
-
-    // 获取当前选中的时间字符串 HH:mm
-    function selectedTime() {
-        return hourCombo.currentText + ":" + minCombo.currentText
-    }
-
-    // 修改状态
-    property int modifyingIndex: -1
-    property string modifyingOldTime: ""
-
-    // 提前时间选择辅助
-    function advanceHourOptions() {
-        var options = []
-        for (var h = 0; h < 24; h++) {
-            options.push(h.toString().padStart(2, '0'))
-        }
-        return options
-    }
-    function advanceMinuteOptions() {
-        var options = []
-        for (var m = 0; m < 60; m++) {
-            options.push(m.toString().padStart(2, '0'))
-        }
-        return options
-    }
-    function selectedAdvanceMinutes() {
-        return parseInt(advHourCombo.currentText) * 60 + parseInt(advMinCombo.currentText)
-    }
+    property string editingOldTime: ""
     function formatAdvanceText(minutes) {
         if (minutes <= 0) return ""
         var h = Math.floor(minutes / 60)
@@ -128,6 +84,17 @@ Item {
                         }
                     }
                 }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1
+                color: theme.divider
+            }
+
+            // ── API settings (collapsible) ──
+            APISettingsPane {
+                Layout.fillWidth: true
             }
 
             Rectangle {
@@ -218,16 +185,12 @@ Item {
                                 }
 
                                 onClicked: {
-                                    root.modifyingIndex = index
-                                    root.modifyingOldTime = modelData
-                                    var parts = modelData.split(":")
-                                    if (parts.length === 2) {
-                                        hourCombo.currentIndex = hourCombo.model.indexOf(parts[0])
-                                        minCombo.currentIndex = minCombo.model.indexOf(parts[1])
-                                    }
-                                    var advMin = typeof settingsViewModel !== "undefined" ? settingsViewModel.getAdvanceMinutesFor(modelData) : 0
-                                    advHourCombo.currentIndex = Math.floor(advMin / 60)
-                                    advMinCombo.currentIndex = advMin % 60
+                                    root.editingOldTime = modelData
+                                    timePickerDialog.dialogTitle = qsTr("修改提醒")
+                                    timePickerDialog.initialTime = modelData
+                                    var advList = typeof settingsViewModel !== "undefined" ? settingsViewModel.alertAdvanceList : []
+                                    timePickerDialog.initialAdvanceMinutes = index < advList.length ? parseInt(advList[index]) : 0
+                                    timePickerDialog.open()
                                 }
                             }
 
@@ -264,401 +227,55 @@ Item {
                 }
             }
 
-            // ── Add / Modify section ──
-            ColumnLayout {
+            // ── Add button ──
+            Button {
+                id: addBtn
+                text: qsTr("添加提醒")
+                font: theme.bodyFont
+                flat: true
+                implicitWidth: 120
+                implicitHeight: 36
                 Layout.alignment: Qt.AlignHCenter
-                spacing: theme.spacingSmall
                 Layout.topMargin: theme.spacingSmall
 
-                // Time selectors row
-                RowLayout {
-                    Layout.alignment: Qt.AlignHCenter
-                    spacing: theme.spacingSmall
-
-                    ComboBox {
-                        id: hourCombo
-                        model: generateHourOptions()
-                        font: theme.bodyFont
-                        flat: true
-                        implicitWidth: 72
-                        implicitHeight: 32
-
-                        contentItem: Text {
-                            text: hourCombo.currentText
-                            font: theme.bodyFont
-                            color: theme.primaryText
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                        }
-
-                        background: Rectangle {
-                            radius: theme.radiusSmall
-                            color: hourCombo.hovered ? theme.cardBgHover : theme.cardBg
-                            border.color: hourCombo.pressed ? theme.accent : (hourCombo.hovered ? theme.cardBorderHover : theme.cardBorder)
-                            border.width: 1
-                            Behavior on color { ColorAnimation { duration: 150 } }
-                            Behavior on border.color { ColorAnimation { duration: 150 } }
-                        }
-
-                        popup: Popup {
-                            y: hourCombo.height + 4
-                            width: hourCombo.width
-                            implicitHeight: Math.min(contentItem.implicitHeight + 8, 200)
-                            padding: 4
-
-                            enter: Transition {
-                                NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 180; easing.type: Easing.OutQuad }
-                                NumberAnimation { property: "y"; from: hourCombo.height - 4; to: hourCombo.height + 4; duration: 180; easing.type: Easing.OutQuad }
-                            }
-
-                            contentItem: ListView {
-                                clip: true
-                                implicitHeight: Math.min(contentHeight, 200)
-                                model: hourCombo.popup.visible ? hourCombo.delegateModel : null
-                                currentIndex: hourCombo.highlightedIndex
-                                ScrollIndicator.vertical: ScrollIndicator {}
-                            }
-
-                            background: Rectangle {
-                                radius: theme.radiusMedium
-                                color: "#16162a"
-                                border.color: theme.cardBorderHover
-                                border.width: 1
-                            }
-                        }
-
-                        delegate: ItemDelegate {
-                            id: hourDel
-                            width: hourCombo.width
-                            height: 28
-
-                            contentItem: Text {
-                                text: modelData
-                                font: theme.bodyFont
-                                color: hourDel.hovered ? theme.accent : theme.primaryText
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
-
-                            background: Rectangle {
-                                color: hourDel.hovered ? theme.cardBgHover : "transparent"
-                                Behavior on color { ColorAnimation { duration: 120 } }
-                            }
-                        }
-                    }
-
-                    Text {
-                        text: ":"
-                        font.pixelSize: 18
-                        font.bold: true
-                        color: theme.primaryText
-                    }
-
-                    ComboBox {
-                        id: minCombo
-                        model: generateMinuteOptions()
-                        font: theme.bodyFont
-                        flat: true
-                        implicitWidth: 72
-                        implicitHeight: 32
-                        currentIndex: 0
-
-                        contentItem: Text {
-                            text: minCombo.currentText
-                            font: theme.bodyFont
-                            color: theme.primaryText
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                        }
-
-                        background: Rectangle {
-                            radius: theme.radiusSmall
-                            color: minCombo.hovered ? theme.cardBgHover : theme.cardBg
-                            border.color: minCombo.pressed ? theme.accent : (minCombo.hovered ? theme.cardBorderHover : theme.cardBorder)
-                            border.width: 1
-                            Behavior on color { ColorAnimation { duration: 150 } }
-                            Behavior on border.color { ColorAnimation { duration: 150 } }
-                        }
-
-                        popup: Popup {
-                            y: minCombo.height + 4
-                            width: minCombo.width
-                            implicitHeight: Math.min(contentItem.implicitHeight + 8, 200)
-                            padding: 4
-
-                            enter: Transition {
-                                NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 180; easing.type: Easing.OutQuad }
-                                NumberAnimation { property: "y"; from: minCombo.height - 4; to: minCombo.height + 4; duration: 180; easing.type: Easing.OutQuad }
-                            }
-
-                            contentItem: ListView {
-                                clip: true
-                                implicitHeight: Math.min(contentHeight, 200)
-                                model: minCombo.popup.visible ? minCombo.delegateModel : null
-                                currentIndex: minCombo.highlightedIndex
-                                ScrollIndicator.vertical: ScrollIndicator {}
-                            }
-
-                            background: Rectangle {
-                                radius: theme.radiusMedium
-                                color: "#16162a"
-                                border.color: theme.cardBorderHover
-                                border.width: 1
-                            }
-                        }
-
-                        delegate: ItemDelegate {
-                            id: minDel
-                            width: minCombo.width
-                            height: 28
-
-                            contentItem: Text {
-                                text: modelData
-                                font: theme.bodyFont
-                                color: minDel.hovered ? theme.accent : theme.primaryText
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
-
-                            background: Rectangle {
-                                color: minDel.hovered ? theme.cardBgHover : "transparent"
-                                Behavior on color { ColorAnimation { duration: 120 } }
-                            }
-                        }
-                    }
+                contentItem: Text {
+                    text: addBtn.text
+                    font: theme.bodyFont
+                    color: theme.accent
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
                 }
 
-                // Advance time selectors row
-                RowLayout {
-                    Layout.alignment: Qt.AlignHCenter
-                    spacing: theme.spacingSmall
-
-                    Text {
-                        text: qsTr("时长")
-                        font: theme.captionFont
-                        color: theme.secondaryText
-                        Layout.alignment: Qt.AlignVCenter
-                    }
-
-                    ComboBox {
-                        id: advHourCombo
-                        model: advanceHourOptions()
-                        font: theme.captionFont
-                        flat: true
-                        implicitWidth: 58
-                        implicitHeight: 28
-                        currentIndex: 0
-
-                        contentItem: Text {
-                            text: advHourCombo.currentText
-                            font: theme.captionFont
-                            color: theme.primaryText
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                        }
-
-                        background: Rectangle {
-                            radius: theme.radiusSmall
-                            color: advHourCombo.hovered ? theme.cardBgHover : theme.cardBg
-                            border.color: advHourCombo.pressed ? theme.accentSecondary : (advHourCombo.hovered ? theme.cardBorderHover : theme.cardBorder)
-                            border.width: 1
-                            Behavior on color { ColorAnimation { duration: 150 } }
-                            Behavior on border.color { ColorAnimation { duration: 150 } }
-                        }
-
-                        popup: Popup {
-                            y: advHourCombo.height + 4
-                            width: advHourCombo.width
-                            implicitHeight: Math.min(contentItem.implicitHeight + 8, 180)
-                            padding: 4
-
-                            contentItem: ListView {
-                                clip: true
-                                implicitHeight: Math.min(contentHeight, 180)
-                                model: advHourCombo.popup.visible ? advHourCombo.delegateModel : null
-                                currentIndex: advHourCombo.highlightedIndex
-                                ScrollIndicator.vertical: ScrollIndicator {}
-                            }
-
-                            background: Rectangle {
-                                radius: theme.radiusMedium
-                                color: "#16162a"
-                                border.color: theme.cardBorderHover
-                                border.width: 1
-                            }
-                        }
-
-                        delegate: ItemDelegate {
-                            width: advHourCombo.width
-                            height: 26
-                            contentItem: Text {
-                                text: modelData
-                                font: theme.captionFont
-                                color: hovered ? theme.accentSecondary : theme.primaryText
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
-                            background: Rectangle {
-                                color: hovered ? theme.cardBgHover : "transparent"
-                            }
-                        }
-                    }
-
-                    Text {
-                        text: qsTr("小时")
-                        font: theme.captionFont
-                        color: theme.secondaryText
-                        Layout.alignment: Qt.AlignVCenter
-                    }
-
-                    ComboBox {
-                        id: advMinCombo
-                        model: advanceMinuteOptions()
-                        font: theme.captionFont
-                        flat: true
-                        implicitWidth: 58
-                        implicitHeight: 28
-                        currentIndex: 0
-
-                        contentItem: Text {
-                            text: advMinCombo.currentText
-                            font: theme.captionFont
-                            color: theme.primaryText
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                        }
-
-                        background: Rectangle {
-                            radius: theme.radiusSmall
-                            color: advMinCombo.hovered ? theme.cardBgHover : theme.cardBg
-                            border.color: advMinCombo.pressed ? theme.accentSecondary : (advMinCombo.hovered ? theme.cardBorderHover : theme.cardBorder)
-                            border.width: 1
-                            Behavior on color { ColorAnimation { duration: 150 } }
-                            Behavior on border.color { ColorAnimation { duration: 150 } }
-                        }
-
-                        popup: Popup {
-                            y: advMinCombo.height + 4
-                            width: advMinCombo.width
-                            implicitHeight: Math.min(contentItem.implicitHeight + 8, 180)
-                            padding: 4
-
-                            contentItem: ListView {
-                                clip: true
-                                implicitHeight: Math.min(contentHeight, 180)
-                                model: advMinCombo.popup.visible ? advMinCombo.delegateModel : null
-                                currentIndex: advMinCombo.highlightedIndex
-                                ScrollIndicator.vertical: ScrollIndicator {}
-                            }
-
-                            background: Rectangle {
-                                radius: theme.radiusMedium
-                                color: "#16162a"
-                                border.color: theme.cardBorderHover
-                                border.width: 1
-                            }
-                        }
-
-                        delegate: ItemDelegate {
-                            width: advMinCombo.width
-                            height: 26
-                            contentItem: Text {
-                                text: modelData
-                                font: theme.captionFont
-                                color: hovered ? theme.accentSecondary : theme.primaryText
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
-                            background: Rectangle {
-                                color: hovered ? theme.cardBgHover : "transparent"
-                            }
-                        }
-                    }
-
-                    Text {
-                        text: qsTr("分钟")
-                        font: theme.captionFont
-                        color: theme.secondaryText
-                        Layout.alignment: Qt.AlignVCenter
-                    }
+                background: Rectangle {
+                    radius: theme.radiusSmall
+                    color: addBtn.pressed ? theme.cardBgHover : (addBtn.hovered ? theme.cardBgHover : theme.cardBg)
+                    border.color: addBtn.pressed ? theme.accent : (addBtn.hovered ? theme.cardBorderHover : theme.cardBorder)
+                    border.width: 1
+                    Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on border.color { ColorAnimation { duration: 150 } }
                 }
 
-                // Buttons row
-                RowLayout {
-                    Layout.alignment: Qt.AlignHCenter
-                    spacing: theme.spacingSmall
+                onClicked: {
+                    root.editingOldTime = ""
+                    timePickerDialog.dialogTitle = qsTr("添加提醒")
+                    timePickerDialog.initialTime = "07:00"
+                    timePickerDialog.initialAdvanceMinutes = 0
+                    timePickerDialog.open()
+                }
+            }
 
-                    Button {
-                        id: addModifyBtn
-                        text: root.modifyingIndex >= 0 ? qsTr("保存") : qsTr("添加")
-                        font: theme.bodyFont
-                        flat: true
-                        implicitHeight: 32
-
-                        contentItem: Text {
-                            text: addModifyBtn.text
-                            font: theme.bodyFont
-                            color: theme.accent
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                            leftPadding: 12
-                            rightPadding: 12
-                        }
-
-                        background: Rectangle {
-                            radius: theme.radiusSmall
-                            color: addModifyBtn.pressed ? theme.cardBgHover : (addModifyBtn.hovered ? theme.cardBgHover : theme.cardBg)
-                            border.color: addModifyBtn.pressed ? theme.accent : (addModifyBtn.hovered ? theme.cardBorderHover : theme.cardBorder)
-                            border.width: 1
-                            Behavior on color { ColorAnimation { duration: 150 } }
-                            Behavior on border.color { ColorAnimation { duration: 150 } }
-                        }
-
-                        onClicked: {
-                            if (typeof settingsViewModel === "undefined") return
-
-                            var newTime = root.selectedTime()
-                            var advMin = root.selectedAdvanceMinutes()
-                            if (root.modifyingIndex >= 0) {
-                                settingsViewModel.updateAlertTime(root.modifyingOldTime, newTime)
-                                settingsViewModel.setAdvanceMinutes(newTime, advMin)
-                                root.modifyingIndex = -1
-                            } else {
-                                settingsViewModel.addAlertTime(newTime)
-                                settingsViewModel.setAdvanceMinutes(newTime, advMin)
-                            }
-                        }
+            // ── Time picker dialog ──
+            TimePickerDialog {
+                id: timePickerDialog
+                onSaved: (time, advMin) => {
+                    if (typeof settingsViewModel === "undefined") return
+                    if (root.editingOldTime !== "") {
+                        settingsViewModel.updateAlertTime(root.editingOldTime, time)
+                    } else {
+                        settingsViewModel.addAlertTime(time)
                     }
-
-                    Button {
-                        id: cancelBtn
-                        visible: root.modifyingIndex >= 0
-                        text: qsTr("取消")
-                        font: theme.bodyFont
-                        flat: true
-                        implicitHeight: 32
-
-                        contentItem: Text {
-                            text: cancelBtn.text
-                            font: theme.bodyFont
-                            color: theme.secondaryText
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                            leftPadding: 12
-                            rightPadding: 12
-                        }
-
-                        background: Rectangle {
-                            radius: theme.radiusSmall
-                            color: cancelBtn.pressed ? theme.cardBgHover : (cancelBtn.hovered ? theme.cardBg : "transparent")
-                            border.color: cancelBtn.hovered ? theme.cardBorder : "transparent"
-                            border.width: 1
-                            Behavior on color { ColorAnimation { duration: 150 } }
-                            Behavior on border.color { ColorAnimation { duration: 150 } }
-                        }
-
-                        onClicked: root.modifyingIndex = -1
-                    }
+                    settingsViewModel.setAdvanceMinutes(time, advMin)
+                    root.editingOldTime = ""
                 }
             }
         }
