@@ -1,0 +1,16 @@
+# API keys / secrets
+config.ini
+
+# Qt Creator
+CMakeLists.txt.user
+
+# Build artifacts
+build*/
+build-*/
+
+# IDE
+.idea/workspace.xml
+.vscode/
+
+# superpowers
+.superpowers/

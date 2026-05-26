@@ -99,7 +99,7 @@ target_link_libraries(WeatherApp PRIVATE
     Qt6::Widgets
 )
 
-# Windows: link Shell32 for SHAppBarMessage, Crypt32 for DPAPI (LLM key encryption)
+# Windows: link Shell32 for SHAppBarMessage (DPAPI loaded dynamically at runtime)
 if(WIN32)
     target_link_libraries(WeatherApp PRIVATE Shell32)
 endif()

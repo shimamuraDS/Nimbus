@@ -61,9 +61,6 @@ public:
 #endif
 
 private:
-#ifdef WITH_LLM
-    QByteArray obfuscateKey(const QByteArray& data) const;
-#endif
     void sortAlertsTogether(QStringList& times, QStringList& advances);
     Config();
     ~Config() = default;

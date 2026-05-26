@@ -1,7 +1,7 @@
 #include "Config.h"
 #ifdef WITH_LLM
-#include <QCryptographicHash>
-#include <QSysInfo>
+#include <windows.h>
+#include <wincrypt.h>
 #endif
 #include <QCoreApplication>
 #include <QDir>
@@ -190,12 +190,47 @@ void Config::updateAlertTime(const QString& oldTime, const QString& newTime) {
 
 #ifdef WITH_LLM
 
-QByteArray Config::obfuscateKey(const QByteArray& data) const {
-    QByteArray machineId = QSysInfo::machineUniqueId();
-    QByteArray hash = QCryptographicHash::hash(machineId, QCryptographicHash::Sha256);
-    QByteArray result = data;
-    for (int i = 0; i < result.size(); ++i)
-        result[i] = result[i] ^ hash[i % hash.size()];
+// DPAPI via runtime dynamic loading — no linker dependency on crypt32
+static bool initDPAPI(DATA_BLOB& out, const DATA_BLOB& in, bool protect) {
+    HMODULE hLib = LoadLibraryW(L"crypt32.dll");
+    if (!hLib) return false;
+
+    using ProtectFunc = BOOL (WINAPI *)(DATA_BLOB*, LPCWSTR, DATA_BLOB*, PVOID,
+                                        CRYPTPROTECT_PROMPTSTRUCT*, DWORD, DATA_BLOB*);
+    using UnprotectFunc = BOOL (WINAPI *)(DATA_BLOB*, LPWSTR*, DATA_BLOB*, PVOID,
+                                          CRYPTPROTECT_PROMPTSTRUCT*, DWORD, DATA_BLOB*);
+
+    bool ok = false;
+    if (protect) {
+        auto fn = (ProtectFunc)GetProcAddress(hLib, "CryptProtectData");
+        if (fn) ok = fn(const_cast<DATA_BLOB*>(&in), L"WeatherApp LLM", nullptr,
+                        nullptr, nullptr, CRYPTPROTECT_UI_FORBIDDEN, &out);
+    } else {
+        auto fn = (UnprotectFunc)GetProcAddress(hLib, "CryptUnprotectData");
+        if (fn) ok = fn(const_cast<DATA_BLOB*>(&in), nullptr, nullptr, nullptr,
+                        nullptr, CRYPTPROTECT_UI_FORBIDDEN, &out);
+    }
+    FreeLibrary(hLib);
+    return ok && out.pbData;
+}
+
+QByteArray encryptDPAPI(const QByteArray& plain) {
+    DATA_BLOB in, out = {};
+    in.pbData = reinterpret_cast<BYTE*>(const_cast<char*>(plain.data()));
+    in.cbData = static_cast<DWORD>(plain.size());
+    if (!initDPAPI(out, in, true)) return {};
+    QByteArray result(reinterpret_cast<char*>(out.pbData), static_cast<int>(out.cbData));
+    LocalFree(out.pbData);
+    return result;
+}
+
+QByteArray decryptDPAPI(const QByteArray& cipher) {
+    DATA_BLOB in, out = {};
+    in.pbData = reinterpret_cast<BYTE*>(const_cast<char*>(cipher.data()));
+    in.cbData = static_cast<DWORD>(cipher.size());
+    if (!initDPAPI(out, in, false)) return {};
+    QByteArray result(reinterpret_cast<char*>(out.pbData), static_cast<int>(out.cbData));
+    LocalFree(out.pbData);
     return result;
 }
 
@@ -216,10 +251,10 @@ void Config::setLLMApiUrl(const QString& url) {
 }
 
 QString Config::getLLMApiKey() const {
-    QByteArray obfuscated = QByteArray::fromBase64(
+    QByteArray encrypted = QByteArray::fromBase64(
         m_userSettings->value("LLM/ApiKey", "").toString().toUtf8());
-    if (obfuscated.isEmpty()) return QString();
-    QByteArray plain = obfuscateKey(obfuscated);
+    if (encrypted.isEmpty()) return QString();
+    QByteArray plain = decryptDPAPI(encrypted);
     return QString::fromUtf8(plain);
 }
 
@@ -228,8 +263,13 @@ void Config::setLLMApiKey(const QString& key) {
         m_userSettings->setValue("LLM/ApiKey", "");
         return;
     }
-    QByteArray obfuscated = obfuscateKey(key.toUtf8());
-    m_userSettings->setValue("LLM/ApiKey", QString::fromLatin1(obfuscated.toBase64()));
+    QByteArray encrypted = encryptDPAPI(key.toUtf8());
+    if (encrypted.isEmpty()) {
+        // DPAPI failed — store as plain base64 with warning
+        m_userSettings->setValue("LLM/ApiKey", QString::fromLatin1(key.toUtf8().toBase64()));
+        return;
+    }
+    m_userSettings->setValue("LLM/ApiKey", QString::fromLatin1(encrypted.toBase64()));
 }
 
 QString Config::getLLMModelName() const {
