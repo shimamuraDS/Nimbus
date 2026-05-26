@@ -53,7 +53,12 @@ LLM/ModelName = "deepseek-v4-pro"
 
 ### API Key 安全存储
 
-使用纯 Qt 方案：`QSysInfo::machineUniqueId()` → `QCryptographicHash::Sha256` → XOR 混淆。无需 Windows DPAPI 或额外库依赖。混淆后 Base64 存入 `QSettings`。
+LLM API Key 使用 Windows DPAPI 加密：
+- `LoadLibrary("crypt32.dll")` + `GetProcAddress` 动态加载，无需链接 crypt32
+- `CryptProtectData()` 加密后 Base64 存入 `QSettings`
+- `CryptUnprotectData()` 读取时解密
+- 加密绑定当前用户，不可跨用户或跨机器解密
+- DPAPI 加载失败时回退 Base64 存储（罕见情况）
 
 ### AlertService 改动
 
