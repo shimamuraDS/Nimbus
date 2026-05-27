@@ -104,7 +104,7 @@ def generate_wxs(deploy_dir: Path, output: Path, product_name: str, upgrade_code
         f.write( '           Scope="perMachine" Language="2052">\n\n')
         f.write( '    <MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />\n\n')
         f.write( '    <MediaTemplate EmbedCab="yes" />\n\n')
-        f.write( '    <ui:WixUI Id="WixUI_InstallDir" />\n\n')
+        f.write( '    <ui:WixUI Id="WixUI_Mondo" />\n\n')
 
         # Directory tree
         f.write('    <StandardDirectory Id="ProgramFiles64Folder">\n')
