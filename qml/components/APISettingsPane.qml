@@ -11,35 +11,34 @@ Item {
     property bool expanded: false
 
     // ── Header ──
-    RowLayout {
+    MouseArea {
         id: headerRow
         width: parent.width
-        spacing: theme.spacingSmall
+        height: 30
+        cursorShape: Qt.PointingHandCursor
+        onClicked: root.expanded = !root.expanded
 
-        Rectangle { width: 8; height: 8; radius: 4; color: theme.mutedText }
+        RowLayout {
+            anchors.fill: parent
+            spacing: theme.spacingSmall
 
-        Text {
-            text: qsTr("API 设置")
-            font: theme.bodyFont
-            color: theme.primaryText
-            Layout.alignment: Qt.AlignVCenter
-        }
+            Rectangle { width: 8; height: 8; radius: 4; color: theme.mutedText; Layout.alignment: Qt.AlignVCenter }
 
-        Item { Layout.fillWidth: true }
+            Text {
+                text: qsTr("API 设置")
+                font: theme.bodyFont
+                color: theme.primaryText
+                Layout.alignment: Qt.AlignVCenter
+            }
 
-        Text {
-            text: expanded ? "▾" : "▸"
-            font: theme.captionFont
-            color: theme.secondaryText
-            Layout.alignment: Qt.AlignVCenter
-            Behavior on rotation { NumberAnimation { duration: 150 } }
-        }
+            Item { Layout.fillWidth: true }
 
-        MouseArea {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: root.expanded = !root.expanded
+            Text {
+                text: root.expanded ? "▾" : "▸"
+                font: theme.captionFont
+                color: theme.secondaryText
+                Layout.alignment: Qt.AlignVCenter
+            }
         }
     }
 
