@@ -239,8 +239,8 @@ struct DailyWeather {
 | `CitySelector` | `qml/components/CitySelector.qml` | 省市两列弹出面板，hover 高亮 |
 | `TimePickerDialog` | `qml/components/TimePickerDialog.qml` | 提醒时间弹窗 (Popup)，进出缩放动画 |
 | `TimeComboBox` | `qml/components/TimeComboBox.qml` | 主题化数字下拉选择器 |
-| `APISettingsPane` | `qml/components/APISettingsPane.qml` | API Key + LLM 配置可折叠面板 |
-| `LLMSettingsPane` | `qml/components/LLMSettingsPane.qml` | LLM 详细设置 [AI 版本独有] |
+| `APISettingsPane` | `qml/components/APISettingsPane.qml` | API Key 密码输入 + 帮助图标(获取密钥链接) + LLM Loader |
+| `LLMSettingsPane` | `qml/components/LLMSettingsPane.qml` | 模型选择(DeepSeek/自定义) + API地址/模型名(可编辑ComboBox含预设) + 测试连接 [AI 版本独有] |
 
 ### 页面路由与动画
 
