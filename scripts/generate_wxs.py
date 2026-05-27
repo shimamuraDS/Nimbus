@@ -106,6 +106,9 @@ def generate_wxs(deploy_dir: Path, output: Path, product_name: str, upgrade_code
         f.write( '    <MediaTemplate EmbedCab="yes" />\n\n')
         f.write( '    <ui:WixUI Id="WixUI_InstallDir" />\n')
         f.write( '    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />\n\n')
+        ico_path = str(deploy_dir / 'Nimbus.ico').replace('\\', '\\\\')
+        f.write(f'    <Icon Id="NimbusIcon" SourceFile="{ico_path}" />\n')
+        f.write( '    <Property Id="ARPPRODUCTICON" Value="NimbusIcon" />\n\n')
 
         # Directory tree
         f.write('    <StandardDirectory Id="ProgramFiles64Folder">\n')
@@ -134,6 +137,7 @@ def generate_wxs(deploy_dir: Path, output: Path, product_name: str, upgrade_code
         f.write('      <Component Id="StartMenuShortcut" Guid="*">\n')
         f.write('        <Shortcut Id="StartMenuSC" Name="Nimbus"\n')
         f.write('                  Target="[INSTALLFOLDER]Nimbus.exe"\n')
+        f.write('                  Icon="NimbusIcon"\n')
         f.write('                  WorkingDirectory="INSTALLFOLDER" />\n')
         f.write('        <RegistryValue Root="HKCU" Key="Software\\Nimbus"\n')
         f.write('                       Name="installed" Type="integer" Value="1" KeyPath="yes" />\n')
@@ -144,11 +148,23 @@ def generate_wxs(deploy_dir: Path, output: Path, product_name: str, upgrade_code
         f.write('      <Component Id="DesktopShortcut" Guid="*">\n')
         f.write('        <Shortcut Id="DesktopSC" Name="Nimbus"\n')
         f.write('                  Target="[INSTALLFOLDER]Nimbus.exe"\n')
+        f.write('                  Icon="NimbusIcon"\n')
         f.write('                  WorkingDirectory="INSTALLFOLDER" />\n')
         f.write('        <RegistryValue Root="HKCU" Key="Software\\Nimbus"\n')
         f.write('                       Name="desktopInstalled" Type="integer" Value="1" KeyPath="yes" />\n')
         f.write('      </Component>\n')
         f.write('    </ComponentGroup>\n\n')
+
+        # Uninstall shortcut in install directory
+        f.write('    <Component Id="UninstallShortcut" Guid="*" Directory="INSTALLFOLDER">\n')
+        f.write('      <Shortcut Id="UninstallSC" Name="Uninstall Nimbus"\n')
+        f.write('                Target="[SystemFolder]msiexec.exe"\n')
+        f.write('                Arguments="/x [ProductCode]"\n')
+        f.write('                Description="Uninstall Nimbus"\n')
+        f.write('                WorkingDirectory="INSTALLFOLDER" />\n')
+        f.write('      <RegistryValue Root="HKCU" Key="Software\\Nimbus"\n')
+        f.write('                     Name="uninstallShortcut" Type="integer" Value="1" KeyPath="yes" />\n')
+        f.write('    </Component>\n\n')
 
         # Auto-start registry
         f.write('    <Component Id="AutostartRegistry" Guid="*" Directory="INSTALLFOLDER">\n')
@@ -164,6 +180,7 @@ def generate_wxs(deploy_dir: Path, output: Path, product_name: str, upgrade_code
         f.write('      <ComponentGroupRef Id="AppComponents" />\n')
         f.write('      <ComponentGroupRef Id="ShortcutComponents" />\n')
         f.write('      <ComponentGroupRef Id="DesktopShortcutComponents" />\n')
+        f.write('      <ComponentRef Id="UninstallShortcut" />\n')
         f.write('      <ComponentRef Id="AutostartRegistry" />\n')
         f.write('    </Feature>\n\n')
 
