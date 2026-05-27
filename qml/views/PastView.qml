@@ -17,7 +17,6 @@ Item {
         if (_scrolled) return
         if (flick.width <= 0 || row.width <= 0) return
         if (row.width <= flick.width) {
-            // All cards fit — no scrolling needed
             _scrolled = true
             scrollToEndTimer.stop()
             return
@@ -80,7 +79,7 @@ Item {
                         topMargin: 5
                         bottomMargin: 5
                     }
-                    contentWidth: Math.max(row.width + row.x + 10, width)
+                    contentWidth: Math.max(row.implicitWidth + 10, width)
                     contentHeight: 200
                     clip: true
                     interactive: contentWidth > width
@@ -88,8 +87,8 @@ Item {
                     Row {
                         id: row
                         spacing: theme.spacingSmall
-                        x: Math.max(5, (flick.width - row.width) / 2)
-                        y: 5
+                        x: implicitWidth <= flick.width ? (flick.width - implicitWidth) / 2 : 5
+                        y: 15
 
                         Repeater {
                             model: typeof weatherViewModel !== "undefined" ? weatherViewModel.pastWeatherList : []
@@ -97,7 +96,7 @@ Item {
                             delegate: WeatherCard {
                                 isPast: true
                                 width: 240
-                                height: 190
+                                height: 170
                                 date: modelData.date || ""
                                 dayWeather: modelData.dayWeather || "--"
                                 dayTemp: modelData.dayTemp || 0
@@ -109,7 +108,6 @@ Item {
                 }
 
                 NavigationButton {
-                    id: backBtn
                     anchors {
                         right: parent.right
                         verticalCenter: parent.verticalCenter

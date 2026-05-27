@@ -44,7 +44,7 @@ Item {
                         topMargin: 5
                         bottomMargin: 5
                     }
-                    contentWidth: Math.max(row.width + row.x + 10, width)
+                    contentWidth: Math.max(row.implicitWidth + 10, width)
                     contentHeight: 200
                     clip: true
                     interactive: contentWidth > width
@@ -52,15 +52,15 @@ Item {
                     Row {
                         id: row
                         spacing: theme.spacingSmall
-                        x: Math.max(5, (flick.width - row.width) / 2)
-                        y: 5
+                        x: implicitWidth <= flick.width ? (flick.width - implicitWidth) / 2 : 5
+                        y: 15
 
                         Repeater {
                             model: typeof weatherViewModel !== "undefined" ? weatherViewModel.futureWeatherList : []
 
                             delegate: WeatherCard {
                                 width: 240
-                                height: 190
+                                height: 170
                                 date: modelData.date || ""
                                 dayWeather: modelData.dayWeather || "--"
                                 dayTemp: modelData.dayTemp || 0
@@ -74,7 +74,6 @@ Item {
                 }
 
                 NavigationButton {
-                    id: backBtn
                     anchors {
                         left: parent.left
                         verticalCenter: parent.verticalCenter

@@ -18,11 +18,9 @@ Item {
         if (typeof weatherViewModel === "undefined") return
         var models = weatherViewModel.hourlyList
         if (!models || models.length === 0) return
-        // Both flick and row must have valid layout dimensions
         if (row.implicitWidth <= 0 || flick.width <= 0) return
 
         var totalW = row.implicitWidth
-        // All cards fit on screen — no scrolling needed
         if (totalW <= flick.width) {
             flick.contentX = 0
             initialCentered = true
@@ -39,12 +37,10 @@ Item {
             }
         }
         if (targetIndex < 0) {
-            // Current hour not found in data — stop retrying
             initialCentered = true
             centerTimer.stop()
             return
         }
-        // Each card is 80px wide; Row spacing sits between cards.
         var cardW = 80 + row.spacing
         var cardCenter = targetIndex * cardW + 40
         var targetX = cardCenter - flick.width / 2
@@ -89,59 +85,92 @@ Item {
         return hh + ":00"
     }
 
-    RowLayout {
+    ColumnLayout {
         anchors.fill: parent
         anchors.margins: theme.spacingMedium
-        spacing: 0
+        spacing: theme.spacingSmall
 
-        NavigationButton {
-            direction: "left"
-            onClicked: {
-                mainWindow.navIsSettings = false
-                mainWindow.navGoingLeft = true
-                stackView.push(pastViewComponent)
-            }
+        Text {
+            text: qsTr("今日天气")
+            font: theme.titleFont
+            color: theme.accentSecondary
+            Layout.alignment: Qt.AlignHCenter
         }
 
-        Flickable {
-            id: flick
+        Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.leftMargin: theme.spacingSmall
-            Layout.rightMargin: theme.spacingSmall
-            contentWidth: Math.max(row.implicitWidth, width)
-            contentHeight: height
-            clip: true
-            interactive: row.implicitWidth > width
 
-            Row {
-                id: row
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: theme.spacingSmall
-                // Center row when all cards fit; otherwise anchor to left for scrolling
-                x: implicitWidth <= flick.width ? (flick.width - implicitWidth) / 2 : 0
+            Item {
+                id: alignedRow
+                y: Math.max(0, (parent.height - 210) * 0.35)
+                width: parent.width
+                height: 210
 
-                Repeater {
-                    model: typeof weatherViewModel !== "undefined" ? weatherViewModel.hourlyList : []
+                NavigationButton {
+                    id: leftBtn
+                    anchors {
+                        left: parent.left
+                        verticalCenter: parent.verticalCenter
+                    }
+                    direction: "left"
+                    onClicked: {
+                        mainWindow.navIsSettings = false
+                        mainWindow.navGoingLeft = true
+                        stackView.push(pastViewComponent)
+                    }
+                }
 
-                    delegate: HourlyCard {
-                        time: modelData.time || "--:--"
-                        weather: modelData.weather || "--"
-                        temperature: modelData.temperature || 0
-                        isNow: modelData.time === root.currentHourStr()
+                NavigationButton {
+                    id: rightBtn
+                    anchors {
+                        right: parent.right
+                        verticalCenter: parent.verticalCenter
+                    }
+                    direction: "right"
+                    onClicked: {
+                        mainWindow.navIsSettings = false
+                        mainWindow.navGoingLeft = false
+                        stackView.push(futureViewComponent)
+                    }
+                }
+
+                Flickable {
+                    id: flick
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        top: parent.top
+                        bottom: parent.bottom
+                        leftMargin: 46
+                        rightMargin: 46
+                        topMargin: 5
+                        bottomMargin: 5
+                    }
+                    contentWidth: Math.max(row.implicitWidth, width)
+                    contentHeight: 200
+                    clip: true
+                    interactive: row.implicitWidth > width
+
+                    Row {
+                        id: row
+                        spacing: theme.spacingSmall
+                        x: implicitWidth <= flick.width ? (flick.width - implicitWidth) / 2 : 5
+                        y: 15
+
+                        Repeater {
+                            model: typeof weatherViewModel !== "undefined" ? weatherViewModel.hourlyList : []
+
+                            delegate: HourlyCard {
+                                time: modelData.time || "--:--"
+                                weather: modelData.weather || "--"
+                                temperature: modelData.temperature || 0
+                                isNow: modelData.time === root.currentHourStr()
+                            }
+                        }
                     }
                 }
             }
         }
-
-        NavigationButton {
-            direction: "right"
-            onClicked: {
-                mainWindow.navIsSettings = false
-                mainWindow.navGoingLeft = false
-                stackView.push(futureViewComponent)
-            }
-        }
     }
 }
-
