@@ -82,9 +82,9 @@ void Config::setAutoStart(bool autoStart) {
                   QSettings::NativeFormat);
     if (autoStart) {
         QString appPath = QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
-        reg.setValue("WeatherApp", appPath);
+        reg.setValue("Nimbus", appPath);
     } else {
-        reg.remove("WeatherApp");
+        reg.remove("Nimbus");
     }
 }
 
@@ -203,7 +203,7 @@ static bool initDPAPI(DATA_BLOB& out, const DATA_BLOB& in, bool protect) {
     bool ok = false;
     if (protect) {
         auto fn = (ProtectFunc)GetProcAddress(hLib, "CryptProtectData");
-        if (fn) ok = fn(const_cast<DATA_BLOB*>(&in), L"WeatherApp LLM", nullptr,
+        if (fn) ok = fn(const_cast<DATA_BLOB*>(&in), L"Nimbus LLM", nullptr,
                         nullptr, nullptr, CRYPTPROTECT_UI_FORBIDDEN, &out);
     } else {
         auto fn = (UnprotectFunc)GetProcAddress(hLib, "CryptUnprotectData");

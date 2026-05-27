@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(WeatherApp VERSION 1.0 LANGUAGES CXX)
+project(Nimbus VERSION 1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -59,7 +59,7 @@ set(APP_SRCS
 )
 
 # 使用 WIN32 属性隐藏 Windows 默认的控制台黑框
-add_executable(WeatherApp WIN32 ${APP_SRCS})
+add_executable(Nimbus WIN32 ${APP_SRCS})
 
 # 注册 QML 模块
 set(WEATHER_APP_QML_FILES
@@ -83,14 +83,14 @@ if(WITH_LLM)
     list(APPEND WEATHER_APP_QML_FILES qml/components/LLMSettingsPane.qml)
 endif()
 
-qt_add_qml_module(WeatherApp
-    URI "WeatherApp"
+qt_add_qml_module(Nimbus
+    URI "Nimbus"
     VERSION 1.0
     QML_FILES ${WEATHER_APP_QML_FILES}
 )
 
 # 链接核心库
-target_link_libraries(WeatherApp PRIVATE
+target_link_libraries(Nimbus PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Qml
@@ -101,7 +101,7 @@ target_link_libraries(WeatherApp PRIVATE
 
 # Windows: link Shell32 for SHAppBarMessage (DPAPI loaded dynamically at runtime)
 if(WIN32)
-    target_link_libraries(WeatherApp PRIVATE Shell32)
+    target_link_libraries(Nimbus PRIVATE Shell32)
 endif()
 
 # 添加测试子目录

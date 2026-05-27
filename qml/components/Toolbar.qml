@@ -27,7 +27,7 @@ Rectangle {
             Layout.preferredHeight: 48
 
             Text {
-                text: qsTr("天气提醒")
+                text: qsTr("Nimbus")
                 font: theme.titleFont
                 color: theme.primaryText
                 Layout.alignment: Qt.AlignVCenter

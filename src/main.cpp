@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 
     app.setOrganizationName("EnterpriseCorp");
     app.setOrganizationDomain("enterprise.com");
-    app.setApplicationName("WeatherApp");
+    app.setApplicationName("Nimbus");
 
     // 确保程序关闭最后一个窗口时不退出（托盘常驻）
     QApplication::setQuitOnLastWindowClosed(false);
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
     QObject::connect(&notificationMgr, &Service::NotificationManager::quitRequested,
                      &app, &QApplication::quit);
 
-    const QUrl url(QStringLiteral("qrc:/WeatherApp/qml/MainWindow.qml"));
+    const QUrl url(QStringLiteral("qrc:/Nimbus/qml/MainWindow.qml"));
     QObject::connect(
         &engine, &QQmlApplicationEngine::objectCreationFailed,
         &app, []() { QCoreApplication::exit(-1); },

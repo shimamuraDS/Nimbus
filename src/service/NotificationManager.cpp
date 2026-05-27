@@ -12,7 +12,7 @@ NotificationManager& NotificationManager::getInstance() {
 NotificationManager::NotificationManager() {
     m_trayIcon = new QSystemTrayIcon(this);
     m_trayIcon->setIcon(QIcon(":/resources/icons/weather/warning.png"));
-    m_trayIcon->setToolTip(QString::fromUtf8("天气提醒助手"));
+    m_trayIcon->setToolTip("Nimbus");
 
     m_trayMenu = new QMenu();
     QAction* showAction = m_trayMenu->addAction(QString::fromUtf8("显示窗口"));

@@ -20,7 +20,7 @@ Item {
             spacing: theme.spacingTiny
             Rectangle { width: 8; height: 8; radius: 4; color: theme.accentWarm }
             Text {
-                text: qsTr("AI 天气提醒")
+                text: qsTr("AI Nimbus")
                 font: theme.captionFont
                 color: theme.secondaryText
             }

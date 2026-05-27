@@ -81,7 +81,7 @@ void AlertService::checkDefaultAlert() {
         }
     }
 
-    QString title = QString::fromUtf8("天气提醒：未来1小时将有") + severeDesc;
+    QString title = QString::fromUtf8("Nimbus：未来1小时将有") + severeDesc;
     QString content = QString::fromUtf8("当前天气：") + currentWeather + "\n"
         + QString::fromUtf8("预计 ") + severeTime
         + QString::fromUtf8(" 左右将出现") + severeDesc
@@ -179,14 +179,14 @@ void AlertService::checkAlerts() {
             else
                 durStr = QString::number(dM) + QString::fromUtf8("分钟");
 
-            title = QString::fromUtf8("天气提醒：未来") + durStr + QString::fromUtf8("内天气");
+            title = QString::fromUtf8("Nimbus：未来") + durStr + QString::fromUtf8("内天气");
 
             for (const auto& seg : segments) {
                 content += seg.time + QString::fromUtf8("：") + seg.desc + "\n";
             }
         } else {
             auto& seg = segments.first();
-            title = QString::fromUtf8("天气提醒：未来1小时天气");
+            title = QString::fromUtf8("Nimbus：未来1小时天气");
             content += QString::fromUtf8("预计 ") + seg.time
                 + QString::fromUtf8(" 左右为") + seg.desc;
         }
@@ -203,7 +203,7 @@ void AlertService::checkAlerts() {
                     NotificationManager::getInstance().showWeatherAlert(fb.first, fb.second);
                 } else {
                     NotificationManager::getInstance().showWeatherAlert(
-                        QString::fromUtf8("天气提醒"), llmText);
+                        QString::fromUtf8("Nimbus"), llmText);
                 }
                 generator->deleteLater();
             });

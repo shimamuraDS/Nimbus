@@ -9,8 +9,14 @@ build*/
 build-*/
 
 # IDE
-.idea/workspace.xml
+.idea/
 .vscode/
 
 # superpowers
 .superpowers/
+
+# Installer output
+scripts/Installer/*.exe
+
+# API reference PDFs
+*.pdf
