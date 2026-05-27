@@ -61,7 +61,7 @@ StackView 使用方向感知过渡动画（pushEnter/popExit: 200ms OutCubic, pu
 *   使用 QtQuick.Layouts 代替绝对定位
 *   组件的对外交互需通过定义 `signal` 进行事件抛出
 *   严格遵循声明式 UI 编程思想
-*   所有文案使用中文，按照 idea.md 的原文
+*   所有文案使用中文
 *   视觉效果统一使用 `Theme` 组件定义的常量，避免硬编码颜色/间距/字体
 
 ## 5. 如何添加新功能

@@ -15,8 +15,17 @@ build-*/
 # superpowers
 .superpowers/
 
-# Installer output
-scripts/Installer/*.exe
+# Installer output (all)
+scripts/Installer/
+
+# Generated WiX sources
+scripts/Nimbus_*.wxs
+
+# windeployqt deployment output
+deploy/
 
 # API reference PDFs
 *.pdf
+
+# WiX build artifacts
+*.wixpdb
