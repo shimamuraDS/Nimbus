@@ -21,12 +21,7 @@ Item {
         "https://api.deepseek.com/anthropic"
     ]
 
-    // Determine initial provider based on stored API URL
-    property bool isDeepSeek: {
-        var storedUrl = typeof settingsViewModel !== "undefined" ? settingsViewModel.llmApiUrl : ""
-        return storedUrl === "" || storedUrl === "https://api.deepseek.com"
-    }
-    property string providerLabel: isDeepSeek ? "DeepSeek" : qsTr("自定义")
+    property bool _providerReady: false
 
     ColumnLayout {
         id: llmLayout
@@ -127,22 +122,26 @@ Item {
                 Layout.fillWidth: true
                 implicitHeight: 34
                 model: ["DeepSeek", qsTr("自定义")]
-                currentIndex: root.isDeepSeek ? 0 : 1
                 textRole: "modelData"
 
+                Component.onCompleted: {
+                    var storedUrl = typeof settingsViewModel !== "undefined" ? settingsViewModel.llmApiUrl : ""
+                    currentIndex = (storedUrl === "" || storedUrl === "https://api.deepseek.com" || storedUrl === "https://api.deepseek.com/anthropic") ? 0 : 1
+                    root._providerReady = true
+                }
+
                 onCurrentIndexChanged: {
+                    if (!root._providerReady) return
                     if (currentIndex === 0) {
-                        // DeepSeek: auto-fill defaults
                         apiUrlCombo.currentIndex = 0
                         modelCombo.currentIndex = 0
-                        commitApiUrl()
-                        commitModelName()
+                        apiUrlCombo.commitApiUrl()
+                        modelCombo.commitModelName()
                     } else {
-                        // Custom: clear fields, show format hint
                         apiUrlCombo.editText = ""
                         modelCombo.editText = ""
-                        commitApiUrl()
-                        commitModelName()
+                        apiUrlCombo.commitApiUrl()
+                        modelCombo.commitModelName()
                     }
                 }
 
