@@ -23,18 +23,29 @@
 
 <p align="center">
   <picture>
-    <img src="docs/images/screenshot-today.png" width="30%" alt="今日天气" />
-    <img src="docs/images/screenshot-past.png" width="30%" alt="过去7天" />
-    <img src="docs/images/screenshot-future.png" width="30%" alt="未来7天" />
+    <img src="docs/images/screenshot-today.png" width="45%" alt="今日天气" />
+    <img src="docs/images/screenshot-future.png" width="45%" alt="未来7天" />
   </picture>
+  <br/>
+  <sub><b>当日逐小时时间线（左）</b> — 24 小时横向滚动，当前小时青色高亮 · <b>未来 7 天预报（右）</b> — 电光青玻璃态卡片，早晚天气/气温/湿度</sub>
 </p>
 
 <p align="center">
   <picture>
-    <img src="docs/images/screenshot-alerm.png" width="30%" alt="设置提醒" />
-    <img src="docs/images/screenshot-standard.png" width="30%" alt="标准版" />
-    <img src="docs/images/screenshot-ai.png" width="30%" alt="AI版" />
+    <img src="docs/images/screenshot-past.png" width="45%" alt="过去7天" />
+    <img src="docs/images/screenshot-alerm.png" width="45%" alt="设置提醒" />
   </picture>
+  <br/>
+  <sub><b>过去 7 天回溯（左）</b> — 日落珊瑚暖色卡片，基于本地逐小时缓存自动归档 · <b>提醒设置（右）</b> — 自定义时间点 + 提前监测时长，支持修改和删除</sub>
+</p>
+
+<p align="center">
+  <picture>
+    <img src="docs/images/screenshot-standard.png" width="45%" alt="标准版" />
+    <img src="docs/images/screenshot-ai.png" width="45%" alt="AI版" />
+  </picture>
+  <br/>
+  <sub><b>标准版（左）</b> — 固定中文模板通知，轻量无额外依赖 · <b>AI 版（右）</b> — DeepSeek 大模型自然语言提醒，API Key DPAPI 加密存储，支持模型选择与连接测试</sub>
 </p>
 
 - **逐小时时间线** — 当日 24 小时横向滚动，当前小时青色高亮
