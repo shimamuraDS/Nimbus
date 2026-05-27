@@ -17,8 +17,7 @@ Item {
         "deepseek-reasoner"
     ]
     property var deepseekUrls: [
-        "https://api.deepseek.com",
-        "https://api.deepseek.com/anthropic"
+        "https://api.deepseek.com"
     ]
 
     property bool _providerReady: false
