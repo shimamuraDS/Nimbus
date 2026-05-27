@@ -55,6 +55,7 @@ set(APP_SRCS
     ${SERVICE_SRCS}
     ${VM_SRCS}
     ${LLM_SRCS}
+    resources/app.rc
     resources/resources.qrc
 )
 
