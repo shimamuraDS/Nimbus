@@ -24,6 +24,32 @@ Item {
                 font: theme.captionFont
                 color: theme.secondaryText
             }
+
+            // Help icon
+            Rectangle {
+                width: 16; height: 16; radius: 8
+                color: "transparent"
+                border.color: theme.secondaryText
+                border.width: 1
+                Text {
+                    anchors.centerIn: parent
+                    text: "?"
+                    font.pixelSize: 11
+                    color: theme.secondaryText
+                }
+                MouseArea {
+                    id: aiHelpArea
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    hoverEnabled: true
+                    onClicked: Qt.openUrlExternally("https://platform.deepseek.com/api_keys")
+                }
+                ToolTip {
+                    text: qsTr("如何获取？")
+                    visible: aiHelpArea.containsMouse
+                    delay: 500
+                }
+            }
         }
 
         // Enable toggle

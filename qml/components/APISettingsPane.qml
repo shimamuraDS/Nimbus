@@ -67,6 +67,32 @@ Item {
                     font: theme.captionFont
                     color: theme.secondaryText
                 }
+
+                // Help icon
+                Rectangle {
+                    width: 16; height: 16; radius: 8
+                    color: "transparent"
+                    border.color: theme.secondaryText
+                    border.width: 1
+                    Text {
+                        anchors.centerIn: parent
+                        text: "?"
+                        font.pixelSize: 11
+                        color: theme.secondaryText
+                    }
+                    MouseArea {
+                        id: weatherApiHelpArea
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        hoverEnabled: true
+                        onClicked: Qt.openUrlExternally("https://lbs.qq.com/dev/console/application/mine")
+                    }
+                    ToolTip {
+                        text: qsTr("如何获取？")
+                        visible: weatherApiHelpArea.containsMouse
+                        delay: 500
+                    }
+                }
             }
 
             Rectangle {
