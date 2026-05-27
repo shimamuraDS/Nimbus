@@ -17,7 +17,7 @@ Item {
         "deepseek-reasoner"
     ]
     property var deepseekUrls: [
-        "https://api.deepseek.com"
+        "https://api.deepseek.com",
     ]
 
     property bool _providerReady: false
@@ -177,18 +177,31 @@ Item {
                 }
 
                 popup: Popup {
+                    id: providerPopup
                     y: providerCombo.height + 4
                     width: providerCombo.width
                     implicitHeight: contentItem.implicitHeight
                     padding: 4
 
+                    Timer {
+                        id: providerScrollTimer
+                        interval: 1
+                        onTriggered: {
+                            if (providerListView.currentIndex >= 0) {
+                                providerListView.positionViewAtIndex(providerListView.currentIndex, ListView.Beginning)
+                            }
+                        }
+                    }
+
+                    onOpened: { providerScrollTimer.start() }
+
                     contentItem: ListView {
+                        id: providerListView
                         clip: true
                         implicitHeight: Math.min(contentHeight, 120)
                         model: providerCombo.popup.visible ? providerCombo.delegateModel : null
                         currentIndex: providerCombo.currentIndex
                         boundsBehavior: Flickable.StopAtBounds
-
                         ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
                     }
 
@@ -202,7 +215,7 @@ Item {
 
                 delegate: ItemDelegate {
                     width: providerCombo.popup.width - 8
-                    implicitHeight: 35
+                    implicitHeight: 40
                     anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
 
                     contentItem: Text {
@@ -210,6 +223,7 @@ Item {
                         font: theme.bodyFont
                         color: highlighted ? theme.accentWarm : theme.primaryText
                         verticalAlignment: Text.AlignVCenter
+                        leftPadding: 8
                     }
 
                     background: Rectangle {
@@ -292,12 +306,34 @@ Item {
                 }
 
                 popup: Popup {
+                    id: apiUrlPopup
                     y: apiUrlCombo.height + 4
                     width: apiUrlCombo.width
                     implicitHeight: contentItem.implicitHeight
                     padding: 4
 
+                    Timer {
+                        id: apiUrlScrollTimer
+                        interval: 1
+                        onTriggered: {
+                            if (apiUrlCombo.currentIndex < 0 && apiUrlCombo.editText === "" && providerCombo.currentIndex === 0)
+                                apiUrlCombo.currentIndex = 0
+                            if (apiUrlListView.currentIndex >= 0) {
+                                apiUrlListView.positionViewAtIndex(apiUrlListView.currentIndex, ListView.Beginning)
+                            }
+                        }
+                    }
+
+                    onOpened: {
+                        for (var i = 0; i < root.deepseekUrls.length; i++) {
+                            if (apiUrlCombo.editText === root.deepseekUrls[i])
+                                apiUrlCombo.currentIndex = i
+                        }
+                        apiUrlScrollTimer.start()
+                    }
+
                     contentItem: ListView {
+                        id: apiUrlListView
                         clip: true
                         implicitHeight: Math.min(contentHeight, 100)
                         model: apiUrlCombo.popup.visible ? apiUrlCombo.delegateModel : null
@@ -316,7 +352,7 @@ Item {
 
                 delegate: ItemDelegate {
                     width: apiUrlCombo.popup.width - 8
-                    implicitHeight: 35
+                    implicitHeight: 40
                     anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
 
                     contentItem: Text {
@@ -325,6 +361,7 @@ Item {
                         color: highlighted ? theme.accentWarm : theme.primaryText
                         verticalAlignment: Text.AlignVCenter
                         elide: Text.ElideMiddle
+                        leftPadding: 8
                     }
 
                     background: Rectangle {
@@ -438,12 +475,34 @@ Item {
                 }
 
                 popup: Popup {
+                    id: modelPopup
                     y: modelCombo.height + 4
                     width: modelCombo.width
                     implicitHeight: contentItem.implicitHeight
                     padding: 4
 
+                    Timer {
+                        id: modelScrollTimer
+                        interval: 1
+                        onTriggered: {
+                            if (modelCombo.currentIndex < 0 && modelCombo.editText === "" && providerCombo.currentIndex === 0)
+                                modelCombo.currentIndex = 0
+                            if (modelListView.currentIndex >= 0) {
+                                modelListView.positionViewAtIndex(modelListView.currentIndex, ListView.Beginning)
+                            }
+                        }
+                    }
+
+                    onOpened: {
+                        for (var i = 0; i < root.deepseekModels.length; i++) {
+                            if (modelCombo.editText === root.deepseekModels[i])
+                                modelCombo.currentIndex = i
+                        }
+                        modelScrollTimer.start()
+                    }
+
                     contentItem: ListView {
+                        id: modelListView
                         clip: true
                         implicitHeight: Math.min(contentHeight, 220)
                         model: modelCombo.popup.visible ? modelCombo.delegateModel : null
@@ -462,7 +521,7 @@ Item {
 
                 delegate: ItemDelegate {
                     width: modelCombo.popup.width - 8
-                    implicitHeight: 35
+                    implicitHeight: 40
                     anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
 
                     contentItem: Text {
@@ -470,6 +529,7 @@ Item {
                         font: theme.bodyFont
                         color: highlighted ? theme.accentWarm : theme.primaryText
                         verticalAlignment: Text.AlignVCenter
+                        leftPadding: 8
                     }
 
                     background: Rectangle {
