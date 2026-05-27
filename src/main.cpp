@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
     app.setOrganizationName("EnterpriseCorp");
     app.setOrganizationDomain("enterprise.com");
     app.setApplicationName("Nimbus");
+    app.setWindowIcon(QIcon(":/resources/icons/Nimbus.png"));
 
     // 确保程序关闭最后一个窗口时不退出（托盘常驻）
     QApplication::setQuitOnLastWindowClosed(false);

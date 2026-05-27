@@ -2,8 +2,8 @@
     <qresource prefix="/">
         <file alias="qtquickcontrols2.conf">qtquickcontrols2.conf</file>
     </qresource>
-    <qresource prefix="/resources">
-        <file>app.rc</file>
+    <qresource prefix="/resources/icons">
+        <file alias="Nimbus.png">icons/Nimbus.png</file>
     </qresource>
     <qresource prefix="/resources/icons/weather">
         <file alias="sunny.png">icons/sunny.png</file>
