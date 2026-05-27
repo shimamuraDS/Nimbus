@@ -233,7 +233,7 @@ struct DailyWeather {
 | `MainWindow` | `qml/MainWindow.qml` | 无边框主窗口，StackView 路由，方向感知过渡动画 |
 | `Theme` | `qml/components/Theme.qml` | 全局视觉常量（色板、间距、圆角、字体） |
 | `Toolbar` | `qml/components/Toolbar.qml` | 标题 + 定位控件 + 设置/最小化按钮 |
-| `WeatherCard` | `qml/components/WeatherCard.qml` | 玻璃态天气卡片 (240×190)，isPast 冷暖色切换 |
+| `WeatherCard` | `qml/components/WeatherCard.qml` | 玻璃态天气卡片 (240×170)，isPast 冷暖色切换 |
 | `HourlyCard` | `qml/components/HourlyCard.qml` | 逐小时竖条卡片 (80×170)，isNow 高亮 |
 | `NavigationButton` | `qml/components/NavigationButton.qml` | 圆形导航按钮，hover 发光边框 |
 | `CitySelector` | `qml/components/CitySelector.qml` | 省市两列弹出面板，hover 高亮 |
