@@ -9,11 +9,11 @@ class tst_AlertCondition : public QObject {
 
 private slots:
     void testSevereWeatherKeywords() {
-        // 晴天不触发提醒
+        // 晴天、多云不触发提醒
         QVERIFY(!Util::WeatherCode::isSevereWeather(QString::fromUtf8("晴")));
+        QVERIFY(!Util::WeatherCode::isSevereWeather(QString::fromUtf8("多云")));
 
-        // 晴以外所有天气都触发提醒
-        QVERIFY(Util::WeatherCode::isSevereWeather(QString::fromUtf8("多云")));
+        // 其他天气都触发提醒
         QVERIFY(Util::WeatherCode::isSevereWeather(QString::fromUtf8("阴")));
         QVERIFY(Util::WeatherCode::isSevereWeather(QString::fromUtf8("小雨")));
         QVERIFY(Util::WeatherCode::isSevereWeather(QString::fromUtf8("暴雨")));

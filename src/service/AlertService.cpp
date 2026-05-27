@@ -22,13 +22,88 @@ void AlertService::startMonitoring() {
     m_timer->start(60000);
 }
 
+void AlertService::checkDefaultAlert() {
+    auto& cache = Data::WeatherCacheManager::getInstance();
+
+    // Tier 1: official weather alarm always triggers
+    QJsonArray alarms = cache.getCurrentAlarms();
+    if (!alarms.isEmpty()) {
+        QJsonObject alarm = alarms.first().toObject();
+        QString alarmKey = alarm["title"].toString();
+        if (alarmKey == m_lastDefaultAlertKey) return;
+        m_lastDefaultAlertKey = alarmKey;
+        NotificationManager::getInstance().showWeatherAlert(
+            alarm["title"].toString(), alarm["pub_content"].toString());
+        return;
+    }
+
+    QJsonArray hourlyData = cache.getHourlyData();
+    if (hourlyData.isEmpty()) return;
+
+    // Find nearest non-sunny weather within the next 1 hour
+    QString severeTime;
+    QString severeDesc;
+    for (int i = 0; i < hourlyData.size(); ++i) {
+        QJsonObject hourObj = hourlyData[i].toObject();
+        QString hourStr = hourObj["hour"].toString();
+        QDateTime dt = Util::TimeUtil::parseTencentHour(hourStr);
+
+        if (Util::TimeUtil::isWithinFutureHours(dt, 1)) {
+            QJsonObject info = hourObj["info"].toObject();
+            QString weatherDesc = info["weather"].toString();
+
+            if (Util::WeatherCode::isSevereWeather(weatherDesc)) {
+                severeTime = hourStr.mid(11, 5);
+                severeDesc = weatherDesc;
+                break;
+            }
+        }
+    }
+
+    if (severeTime.isEmpty()) {
+        m_lastDefaultAlertKey.clear();
+        return;
+    }
+
+    // Dedup: don't re-alert for the same weather event
+    QString eventKey = severeTime + severeDesc;
+    if (eventKey == m_lastDefaultAlertKey) return;
+    m_lastDefaultAlertKey = eventKey;
+
+    // Get current weather
+    QString currentHourKey = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:00");
+    QString currentWeather;
+    for (int i = 0; i < hourlyData.size(); ++i) {
+        QJsonObject hourObj = hourlyData[i].toObject();
+        if (hourObj["hour"].toString() == currentHourKey) {
+            currentWeather = hourObj["info"].toObject()["weather"].toString();
+            break;
+        }
+    }
+
+    QString title = QString::fromUtf8("天气提醒：未来1小时将有") + severeDesc;
+    QString content = QString::fromUtf8("当前天气：") + currentWeather + "\n"
+        + QString::fromUtf8("预计 ") + severeTime
+        + QString::fromUtf8(" 左右将出现") + severeDesc
+        + QString::fromUtf8("，请提前做好防范。");
+
+    NotificationManager::getInstance().showWeatherAlert(title, content);
+}
+
 void AlertService::checkAlerts() {
     QString currentTime = Util::TimeUtil::getCurrentTimeHHmm();
 
-    if (currentTime == m_lastAlertTime) return;
-
     auto& config = Util::Config::getInstance();
     QStringList alertTimes = config.getAlertTimes();
+
+    // No alert times: default — alert 1h ahead of non-sunny weather
+    if (alertTimes.isEmpty()) {
+        checkDefaultAlert();
+        return;
+    }
+
+    // Alert times configured: alert at specified times for ALL weather (including sunny)
+    if (currentTime == m_lastAlertTime) return;
     if (!alertTimes.contains(currentTime)) return;
 
     m_lastAlertTime = currentTime;
@@ -63,11 +138,9 @@ void AlertService::checkAlerts() {
         }
     }
 
-    // Tier 2: check weather within the configured duration window
-    // Default to 1 hour if no duration set
+    // Check weather within the configured duration window (ALL weather types)
     int futureHours = qMax(1, (durationMin + 59) / 60);
 
-    // Collect all severe weather segments within the window
     struct WeatherSegment {
         QString time;
         QString desc;
@@ -83,16 +156,13 @@ void AlertService::checkAlerts() {
         if (Util::TimeUtil::isWithinFutureHours(dt, futureHours)) {
             QJsonObject info = hourObj["info"].toObject();
             QString weatherDesc = info["weather"].toString();
-
-            if (Util::WeatherCode::isSevereWeather(weatherDesc)) {
-                segments.append({hourStr.mid(11, 5), weatherDesc});
-            }
+            segments.append({hourStr.mid(11, 5), weatherDesc});
         }
     }
 
     if (segments.isEmpty()) return;
 
-    // Build fallback notification (fixed template, always available)
+    // Build fallback notification (neutral tone — covers sunny too)
     auto buildFallback = [&]() -> QPair<QString, QString> {
         QString title;
         QString content;
@@ -109,18 +179,16 @@ void AlertService::checkAlerts() {
             else
                 durStr = QString::number(dM) + QString::fromUtf8("分钟");
 
-            title = QString::fromUtf8("天气提醒：未来") + durStr + QString::fromUtf8("内天气变化");
+            title = QString::fromUtf8("天气提醒：未来") + durStr + QString::fromUtf8("内天气");
 
             for (const auto& seg : segments) {
                 content += seg.time + QString::fromUtf8("：") + seg.desc + "\n";
             }
-            content += QString::fromUtf8("请提前做好防范。");
         } else {
             auto& seg = segments.first();
-            title = QString::fromUtf8("天气提醒：未来1小时将有") + seg.desc;
+            title = QString::fromUtf8("天气提醒：未来1小时天气");
             content += QString::fromUtf8("预计 ") + seg.time
-                + QString::fromUtf8(" 左右将出现") + seg.desc
-                + QString::fromUtf8("，请提前做好防范。");
+                + QString::fromUtf8(" 左右为") + seg.desc;
         }
         return {title, content};
     };

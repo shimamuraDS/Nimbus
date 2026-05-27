@@ -28,8 +28,8 @@ QString WeatherCode::getIconByWeather(const QString& weatherStr) {
 }
 
 bool WeatherCode::isSevereWeather(const QString& weatherStr) {
-    // 除晴天以外所有天气都触发提醒
-    return !weatherStr.contains(QString::fromUtf8("晴"));
+    return !weatherStr.contains(QString::fromUtf8("晴"))
+        && !weatherStr.contains(QString::fromUtf8("多云"));
 }
 
 } // namespace Util

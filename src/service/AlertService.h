@@ -17,8 +17,11 @@ private slots:
     void checkAlerts();
 
 private:
+    void checkDefaultAlert();
+
     QTimer* m_timer;
     QString m_lastAlertTime;
+    QString m_lastDefaultAlertKey;
 };
 
 } // namespace Service
