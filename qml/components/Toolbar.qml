@@ -26,6 +26,27 @@ Rectangle {
             Layout.rightMargin: theme.spacingMedium
             Layout.preferredHeight: 48
 
+            Image {
+                source: "qrc:/resources/icons/github.png"
+                Layout.preferredWidth: 20
+                Layout.preferredHeight: 20
+                Layout.alignment: Qt.AlignVCenter
+                fillMode: Image.PreserveAspectFit
+                opacity: ghMouseArea.containsMouse ? 1.0 : 0.65
+
+                MouseArea {
+                    id: ghMouseArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: Qt.openUrlExternally("https://github.com/shimamuraDS/Nimbus")
+                }
+
+                Behavior on opacity { NumberAnimation { duration: 150 } }
+            }
+
+            Item { width: 6; height: 1 }
+
             Text {
                 text: qsTr("Nimbus")
                 font: theme.titleFont

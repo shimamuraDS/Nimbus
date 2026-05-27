@@ -1,8 +1,6 @@
 #include "Config.h"
-#ifdef WITH_LLM
 #include <windows.h>
 #include <wincrypt.h>
-#endif
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
@@ -36,19 +34,89 @@ Config::Config() {
     setAutoStart(isAutoStart());
 }
 
+// DPAPI via runtime dynamic loading — no linker dependency on crypt32
+static bool initDPAPI(DATA_BLOB& out, const DATA_BLOB& in, bool protect, LPCWSTR entropy) {
+    HMODULE hLib = LoadLibraryW(L"crypt32.dll");
+    if (!hLib) return false;
+
+    using ProtectFunc = BOOL (WINAPI *)(DATA_BLOB*, LPCWSTR, DATA_BLOB*, PVOID,
+                                        CRYPTPROTECT_PROMPTSTRUCT*, DWORD, DATA_BLOB*);
+    using UnprotectFunc = BOOL (WINAPI *)(DATA_BLOB*, LPWSTR*, DATA_BLOB*, PVOID,
+                                          CRYPTPROTECT_PROMPTSTRUCT*, DWORD, DATA_BLOB*);
+
+    bool ok = false;
+    if (protect) {
+        auto fn = (ProtectFunc)GetProcAddress(hLib, "CryptProtectData");
+        if (fn) ok = fn(const_cast<DATA_BLOB*>(&in), entropy, nullptr,
+                        nullptr, nullptr, CRYPTPROTECT_UI_FORBIDDEN, &out);
+    } else {
+        auto fn = (UnprotectFunc)GetProcAddress(hLib, "CryptUnprotectData");
+        if (fn) ok = fn(const_cast<DATA_BLOB*>(&in), nullptr, nullptr, nullptr,
+                        nullptr, CRYPTPROTECT_UI_FORBIDDEN, &out);
+    }
+    FreeLibrary(hLib);
+    return ok && out.pbData;
+}
+
+static QByteArray encryptDPAPI(const QByteArray& plain, LPCWSTR entropy) {
+    DATA_BLOB in, out = {};
+    in.pbData = reinterpret_cast<BYTE*>(const_cast<char*>(plain.data()));
+    in.cbData = static_cast<DWORD>(plain.size());
+    if (!initDPAPI(out, in, true, entropy)) return {};
+    QByteArray result(reinterpret_cast<char*>(out.pbData), static_cast<int>(out.cbData));
+    LocalFree(out.pbData);
+    return result;
+}
+
+static QByteArray decryptDPAPI(const QByteArray& cipher, LPCWSTR entropy) {
+    DATA_BLOB in, out = {};
+    in.pbData = reinterpret_cast<BYTE*>(const_cast<char*>(cipher.data()));
+    in.cbData = static_cast<DWORD>(cipher.size());
+    if (!initDPAPI(out, in, false, entropy)) return {};
+    QByteArray result(reinterpret_cast<char*>(out.pbData), static_cast<int>(out.cbData));
+    LocalFree(out.pbData);
+    return result;
+}
+
 QString Config::getTencentApiKey() const {
-    // 优先使用用户设置，没有则回退到 config.ini
-    QString userKey = m_userSettings->value("API/WeatherKey", "").toString();
-    if (!userKey.isEmpty()) return userKey;
+    // contains() 区分「用户主动清空」和「从未设置」
+    if (m_userSettings->contains("API/WeatherKey")) {
+        QString stored = m_userSettings->value("API/WeatherKey", "").toString();
+        if (stored.isEmpty()) return QString(); // 用户主动清空
+        QByteArray cipher = QByteArray::fromBase64(stored.toUtf8());
+        if (!cipher.isEmpty()) {
+            QByteArray plain = decryptDPAPI(cipher, L"Nimbus Weather");
+            if (!plain.isEmpty()) return QString::fromUtf8(plain);
+        }
+        return QString();
+    }
     return m_iniSettings->value("API/DeveloperKey", "").toString();
 }
 
 QString Config::getWeatherApiKey() const {
-    return getTencentApiKey();
+    // 仅返回用户自行填入的值（UI 绑定），不回退 config.ini
+    if (m_userSettings->contains("API/WeatherKey")) {
+        QString stored = m_userSettings->value("API/WeatherKey", "").toString();
+        if (stored.isEmpty()) return QString();
+        QByteArray cipher = QByteArray::fromBase64(stored.toUtf8());
+        if (!cipher.isEmpty()) {
+            QByteArray plain = decryptDPAPI(cipher, L"Nimbus Weather");
+            return QString::fromUtf8(plain);
+        }
+    }
+    return QString();
 }
 
 void Config::setWeatherApiKey(const QString& key) {
-    m_userSettings->setValue("API/WeatherKey", key);
+    if (key.isEmpty()) {
+        m_userSettings->setValue("API/WeatherKey", "");
+        return;
+    }
+    QByteArray encrypted = encryptDPAPI(key.toUtf8(), L"Nimbus Weather");
+    if (!encrypted.isEmpty()) {
+        m_userSettings->setValue("API/WeatherKey",
+            QString::fromLatin1(encrypted.toBase64()));
+    }
 }
 
 bool Config::isAutoLocation() const {
@@ -187,52 +255,7 @@ void Config::updateAlertTime(const QString& oldTime, const QString& newTime) {
         setAlertAdvanceMinutes(advances);
     }
 }
-
 #ifdef WITH_LLM
-
-// DPAPI via runtime dynamic loading — no linker dependency on crypt32
-static bool initDPAPI(DATA_BLOB& out, const DATA_BLOB& in, bool protect) {
-    HMODULE hLib = LoadLibraryW(L"crypt32.dll");
-    if (!hLib) return false;
-
-    using ProtectFunc = BOOL (WINAPI *)(DATA_BLOB*, LPCWSTR, DATA_BLOB*, PVOID,
-                                        CRYPTPROTECT_PROMPTSTRUCT*, DWORD, DATA_BLOB*);
-    using UnprotectFunc = BOOL (WINAPI *)(DATA_BLOB*, LPWSTR*, DATA_BLOB*, PVOID,
-                                          CRYPTPROTECT_PROMPTSTRUCT*, DWORD, DATA_BLOB*);
-
-    bool ok = false;
-    if (protect) {
-        auto fn = (ProtectFunc)GetProcAddress(hLib, "CryptProtectData");
-        if (fn) ok = fn(const_cast<DATA_BLOB*>(&in), L"Nimbus LLM", nullptr,
-                        nullptr, nullptr, CRYPTPROTECT_UI_FORBIDDEN, &out);
-    } else {
-        auto fn = (UnprotectFunc)GetProcAddress(hLib, "CryptUnprotectData");
-        if (fn) ok = fn(const_cast<DATA_BLOB*>(&in), nullptr, nullptr, nullptr,
-                        nullptr, CRYPTPROTECT_UI_FORBIDDEN, &out);
-    }
-    FreeLibrary(hLib);
-    return ok && out.pbData;
-}
-
-QByteArray encryptDPAPI(const QByteArray& plain) {
-    DATA_BLOB in, out = {};
-    in.pbData = reinterpret_cast<BYTE*>(const_cast<char*>(plain.data()));
-    in.cbData = static_cast<DWORD>(plain.size());
-    if (!initDPAPI(out, in, true)) return {};
-    QByteArray result(reinterpret_cast<char*>(out.pbData), static_cast<int>(out.cbData));
-    LocalFree(out.pbData);
-    return result;
-}
-
-QByteArray decryptDPAPI(const QByteArray& cipher) {
-    DATA_BLOB in, out = {};
-    in.pbData = reinterpret_cast<BYTE*>(const_cast<char*>(cipher.data()));
-    in.cbData = static_cast<DWORD>(cipher.size());
-    if (!initDPAPI(out, in, false)) return {};
-    QByteArray result(reinterpret_cast<char*>(out.pbData), static_cast<int>(out.cbData));
-    LocalFree(out.pbData);
-    return result;
-}
 
 bool Config::isLLMEnabled() const {
     return m_userSettings->value("LLM/Enabled", false).toBool();
@@ -254,7 +277,7 @@ QString Config::getLLMApiKey() const {
     QByteArray encrypted = QByteArray::fromBase64(
         m_userSettings->value("LLM/ApiKey", "").toString().toUtf8());
     if (encrypted.isEmpty()) return QString();
-    QByteArray plain = decryptDPAPI(encrypted);
+    QByteArray plain = decryptDPAPI(encrypted, L"Nimbus LLM");
     return QString::fromUtf8(plain);
 }
 
@@ -263,13 +286,10 @@ void Config::setLLMApiKey(const QString& key) {
         m_userSettings->setValue("LLM/ApiKey", "");
         return;
     }
-    QByteArray encrypted = encryptDPAPI(key.toUtf8());
-    if (encrypted.isEmpty()) {
-        // DPAPI failed — store as plain base64 with warning
-        m_userSettings->setValue("LLM/ApiKey", QString::fromLatin1(key.toUtf8().toBase64()));
-        return;
+    QByteArray encrypted = encryptDPAPI(key.toUtf8(), L"Nimbus LLM");
+    if (!encrypted.isEmpty()) {
+        m_userSettings->setValue("LLM/ApiKey", QString::fromLatin1(encrypted.toBase64()));
     }
-    m_userSettings->setValue("LLM/ApiKey", QString::fromLatin1(encrypted.toBase64()));
 }
 
 QString Config::getLLMModelName() const {
