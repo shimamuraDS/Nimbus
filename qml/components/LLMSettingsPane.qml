@@ -510,8 +510,12 @@ Item {
                     }
 
                     onClicked: {
-                        if (typeof settingsViewModel !== "undefined")
+                        if (typeof settingsViewModel !== "undefined") {
+                            apiUrlCombo.commitApiUrl()
+                            settingsViewModel.llmApiKey = apiKeyInput.text
+                            modelCombo.commitModelName()
                             settingsViewModel.testLLMConnection()
+                        }
                     }
                 }
 
