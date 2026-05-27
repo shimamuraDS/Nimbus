@@ -11,7 +11,7 @@ NotificationManager& NotificationManager::getInstance() {
 
 NotificationManager::NotificationManager() {
     m_trayIcon = new QSystemTrayIcon(this);
-    m_trayIcon->setIcon(QIcon(":/resources/icons/weather/warning.png"));
+    m_trayIcon->setIcon(QIcon(":/resources/icons/Nimbus.ico"));
     m_trayIcon->setToolTip("Nimbus");
 
     m_trayMenu = new QMenu();

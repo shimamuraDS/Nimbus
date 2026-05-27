@@ -2,6 +2,9 @@
     <qresource prefix="/">
         <file alias="qtquickcontrols2.conf">qtquickcontrols2.conf</file>
     </qresource>
+    <qresource prefix="/resources">
+        <file>app.rc</file>
+    </qresource>
     <qresource prefix="/resources/icons">
         <file alias="Nimbus.ico">icons/Nimbus.ico</file>
     </qresource>
