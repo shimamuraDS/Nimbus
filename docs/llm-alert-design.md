@@ -171,7 +171,7 @@ AlertService 60s 定时器
 | 文件 | 改动 |
 |------|------|
 | `CMakeLists.txt` | `option(WITH_LLM)` + 条件源文件 + 条件 QML 文件 |
-| `src/util/Config.h/.cpp` | `#ifdef WITH_LLM` LLM 配置方法 + `weatherApiKey` + XOR 混淆 |
+| `src/util/Config.h/.cpp` | `#ifdef WITH_LLM` LLM 配置方法 + `weatherApiKey` + DPAPI 加密 |
 | `src/service/AlertService.cpp` | `#ifdef WITH_LLM` LLM 路径 + 降级 fallback |
 | `src/viewmodel/SettingsViewModel.h/.cpp` | `weatherApiKey` + `#ifdef WITH_LLM` LLM 属性 + `testLLMConnection` |
 | `qml/views/SettingsView.qml` | APISettingsPane 替代旧 LLM Loader |

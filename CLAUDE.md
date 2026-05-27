@@ -47,7 +47,7 @@ Conditional compilation via `#ifdef WITH_LLM`:
 - AI (`WITH_LLM=ON`): LLM-generated natural language alerts via OpenAI-compatible API (DeepSeek)
 
 ## Notes
-- API keys in `config.ini` (not committed, in .gitignore)
+- API keys stored via Windows DPAPI encryption in QSettings; `config.ini` remains as fallback
 - LLM API Key stored via Windows DPAPI encryption (crypt32.dll loaded dynamically)
 - Window size ≤ 1/12 screen area, positioned bottom-right above taskbar
 - No comments needed in code unless WHY is non-obvious

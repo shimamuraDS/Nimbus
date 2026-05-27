@@ -29,7 +29,6 @@ Nimbus/
 ├── .gitignore                      # Git 忽略规则 (排除敏感配置文件)
 ├── README.md
 ├── LICENSE
-├── CHANGELOG.md
 ├── CLAUDE.md                       # AI 辅助开发上下文
 ├── docs/
 │   ├── architecture.md             # 本文件 — 系统架构设计

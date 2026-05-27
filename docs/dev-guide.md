@@ -30,6 +30,8 @@ QML View Layer  →  ViewModel Layer  →  Service Layer  →  Network Layer
 | `HourlyCard` | `qml/components/HourlyCard.qml` | 逐小时天气卡片（竖条 80×170），内置天气图标，图标悬停浮动动画（transform Translate），`isNow` 属性高亮当前小时（青色渐变边框+发光效果） |
 | `NavigationButton` | `qml/components/NavigationButton.qml` | 圆形导航按钮，hover 发光边框，按压缩放动画 |
 | `CitySelector` | `qml/components/CitySelector.qml` | 城市选择器，内置 98 个全国城市，左侧省份列表 + 右侧城市列表两列弹出面板，带弹出/收起动画和 hover 高亮 |
+| `APISettingsPane` | `qml/components/APISettingsPane.qml` | 可折叠 API 设置面板，天气 API Key 输入 + 帮助图标(获取密钥链接) + LLM 设置 Loader |
+| `LLMSettingsPane` | `qml/components/LLMSettingsPane.qml` | [AI 版本] 模型选择器(DeepSeek/自定义) + 可编辑 ComboBox(API地址/模型名预设) + 测试连接 |
 | `TodayView` | `qml/views/TodayView.qml` | 当日逐小时天气时间线，顶部"今日天气"标题（柔和紫色），横向滑动卡片区，默认居中显示当前小时卡片，`isNow` 高亮 |
 | `PastView` | `qml/views/PastView.qml` | 过去 7 天天气列表，暖珊瑚色卡片，水平居中，两侧对称间距，默认滚动至末尾（最近一天） |
 | `FutureView` | `qml/views/FutureView.qml` | 未来 7 天预报列表，冷青色卡片，水平居中，两侧对称间距 |
