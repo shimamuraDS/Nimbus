@@ -91,7 +91,6 @@ Nimbus/
 │   ├── tst_AlertCondition.cpp
 │   └── tst_HttpService.cpp
 ├── scripts/
-│   ├── setup.iss                   # Inno Setup 安装脚本 (已废弃，保留参考)
 │   ├── generate_wxs.py             # WiX .wxs 生成器
 │   └── Installer/                  # 构建产物输出目录
 └── deploy/                         # windeployqt 临时部署目录
