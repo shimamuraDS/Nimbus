@@ -57,9 +57,11 @@ ctest --output-on-failure
 
 ```bash
 windeployqt --qmldir ../qml --release ./Nimbus.exe
+# 首次需安装 WixUI 扩展: wix extension add WixToolset.UI.wixext/7.0.0
 python scripts/generate_wxs.py deploy/standard scripts/Nimbus_Standard.wxs \
     --name "Nimbus Standard" --upgrade-code <GUID>
-wix build -o scripts/Installer/Nimbus_Standard.msi scripts/Nimbus_Standard.wxs
+wix build -ext WixToolset.UI.wixext \
+    -o scripts/Installer/Nimbus_Standard.msi scripts/Nimbus_Standard.wxs
 ```
 
 ## 项目文档
