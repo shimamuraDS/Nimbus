@@ -62,6 +62,7 @@ public:
 signals:
     void settingsChanged();
     void alertTimeListChanged();
+    void weatherApiKeyChanged();
 #ifdef WITH_LLM
     void llmSettingsChanged();
     void llmTestResultChanged();

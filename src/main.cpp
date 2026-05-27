@@ -43,6 +43,10 @@ int main(int argc, char *argv[])
     auto* settingsViewModel = new ViewModel::SettingsViewModel(locationService, &app);
     auto* trayViewModel = new ViewModel::TrayViewModel(&app);
 
+    // API 密钥更新后自动刷新天气数据
+    QObject::connect(settingsViewModel, &ViewModel::SettingsViewModel::weatherApiKeyChanged,
+                     weatherViewModel, &ViewModel::WeatherViewModel::requestData);
+
     // 启动预警监控
     alertService->startMonitoring();
 

@@ -26,6 +26,7 @@ QString SettingsViewModel::weatherApiKey() const {
 void SettingsViewModel::setWeatherApiKey(const QString& key) {
     Util::Config::getInstance().setWeatherApiKey(key);
     emit settingsChanged();
+    emit weatherApiKeyChanged();
 }
 
 bool SettingsViewModel::isAutoLocation() const {
