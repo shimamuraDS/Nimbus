@@ -83,7 +83,7 @@ Nimbus/
 ├── resources/
 │   ├── resources.qrc               # Qt 资源集合
 │   ├── app.rc                      # Windows 资源脚本 (图标)
-│   ├── Nimbus.png                  # 应用 Logo
+│   ├── Nimbus.ico                  # 应用图标
 │   └── icons/                      # 天气图标 PNG
 ├── tests/                          # 单元测试 (QtTest + CTest)
 │   ├── CMakeLists.txt

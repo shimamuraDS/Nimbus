@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="resources/icons/Nimbus.png" width="80" alt="Nimbus" />
+  <img src="resources/icons/Nimbus.ico" width="80" alt="Nimbus" />
 </p>
 
 <h1 align="center">Nimbus</h1>
