@@ -30,7 +30,7 @@ def build_dir_tree(root: Path):
     """Build a nested directory structure from all files under root."""
     tree = {}
     for f in root.rglob('*'):
-        if f.is_file():
+        if f.is_file() and f.suffix != '.wxs' and f.suffix != '.wixpdb':
             parts = f.relative_to(root).parts
             d = tree
             for part in parts[:-1]:
@@ -101,14 +101,16 @@ def generate_wxs(deploy_dir: Path, output: Path, product_name: str, upgrade_code
         f.write('     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">\n')
         f.write(f'  <Package Name="{escape(product_name)}" Manufacturer="Nimbus"\n')
         f.write(f'           Version="1.0.0" UpgradeCode="{upgrade_code}"\n')
-        f.write( '           Scope="perMachine" Language="2052">\n\n')
+        f.write( '           Scope="perMachine" Language="2052" Codepage="936">\n\n')
         f.write( '    <MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />\n\n')
         f.write( '    <MediaTemplate EmbedCab="yes" />\n\n')
         f.write( '    <ui:WixUI Id="WixUI_InstallDir" />\n')
         f.write( '    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />\n\n')
         ico_path = str(deploy_dir / 'Nimbus.ico').replace('\\', '\\\\')
         f.write(f'    <Icon Id="NimbusIcon" SourceFile="{ico_path}" />\n')
-        f.write( '    <Property Id="ARPPRODUCTICON" Value="NimbusIcon" />\n\n')
+        f.write( '    <Property Id="ARPPRODUCTICON" Value="NimbusIcon" />\n')
+        f.write( '    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="&#x542F;&#x52A8; Nimbus" />\n')
+        f.write( '    <Property Id="WixShellExecTarget" Value="[INSTALLFOLDER]Nimbus.exe" />\n\n')
 
         # Directory tree
         f.write('    <StandardDirectory Id="ProgramFiles64Folder">\n')
