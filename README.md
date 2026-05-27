@@ -17,12 +17,6 @@
 
 <p align="center"><strong>Windows 桌面天气提醒应用</strong><br/>系统托盘驻留 · 双重预警 · 深色赛博朋克 · LLM 智能通知</p>
 
-<p align="center">
-  <picture>
-    <img src="docs/images/screenshot-main.png" width="640" alt="Nimbus Screenshot" />
-  </picture>
-</p>
-
 ---
 
 ## 功能预览
@@ -31,7 +25,15 @@
   <picture>
     <img src="docs/images/screenshot-today.png" width="30%" alt="今日天气" />
     <img src="docs/images/screenshot-past.png" width="30%" alt="过去7天" />
-    <img src="docs/images/screenshot-settings.png" width="30%" alt="设置页面" />
+    <img src="docs/images/screenshot-future.png" width="30%" alt="未来7天" />
+  </picture>
+</p>
+
+<p align="center">
+  <picture>
+    <img src="docs/images/screenshot-alerm.png" width="30%" alt="设置提醒" />
+    <img src="docs/images/screenshot-standard.png" width="30%" alt="标准版" />
+    <img src="docs/images/screenshot-ai.png" width="30%" alt="AI版" />
   </picture>
 </p>
 
@@ -49,7 +51,7 @@
 
 ## 版本
 
-| | <img src="docs/images/icon-standard.png" width="24" /> Standard | <img src="docs/images/icon-ai.png" width="24" /> AI |
+| | Standard | AI |
 |---|----------|----|
 | **CMake** | `-DWITH_LLM=OFF` | `-DWITH_LLM=ON` |
 | **通知方式** | 固定中文模板 | LLM 自然语言 + 模板降级 |
