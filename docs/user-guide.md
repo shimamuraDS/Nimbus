@@ -5,7 +5,7 @@
 1.  从 [GitHub Releases](https://github.com/shimamuraDS/Nimbus/releases) 下载安装包：
     - **标准版**：`Nimbus_Standard.msi`（固定模板通知）
     - **AI 版**：`Nimbus_AI.msi`（LLM 智能通知 + 模板降级）
-2.  双击运行 `.msi` 安装包，按向导完成安装。安装过程中可选择自定义安装路径。
+2.  双击运行 `.msi` 安装包，按向导完成安装（默认安装到 `C:\Program Files\Nimbus`）。如需自定义安装路径，使用 PowerShell 包装器：`powershell -File scripts/install.ps1`。
 3.  安装完毕后，程序将默认开启**开机自启动**并隐藏运行。
 4.  您将在 Windows 屏幕右下角（系统托盘区域）看到一枚天气助手的图标。
 5.  点击该图标，即可在屏幕右下角唤出 Nimbus 控制面板。
