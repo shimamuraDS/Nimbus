@@ -322,16 +322,13 @@ windeployqt --qmldir ../qml --release ./Nimbus.exe
 python scripts/generate_wxs.py deploy/standard scripts/Nimbus_Standard.wxs \
     --name "Nimbus Standard" --upgrade-code <GUID>
 
-# 编译 MSI
-wix build -o scripts/Installer/Nimbus_Standard.msi scripts/Nimbus_Standard.wxs
-
-# 自定义路径安装（PowerShell 包装器）
-powershell -File scripts/install.ps1 -MsiPath scripts/Installer/Nimbus_Standard.msi -InstallPath "D:\Nimbus"
-# 或直接 msiexec: msiexec /i Nimbus.msi INSTALLFOLDER="D:\Nimbus" /qn
+# 编译 MSI（需先 wix extension add WixToolset.UI.wixext）
+wix build -ext WixToolset.UI.wixext -o scripts/Installer/Nimbus_Standard.msi scripts/Nimbus_Standard.wxs
 ```
 
 MSI 特性：
-- 默认安装到 `%ProgramFiles%\Nimbus`，支持 `INSTALLFOLDER` 参数自定义路径
+- 安装向导支持自定义安装路径（WixUI_InstallDir，Browse 选择目录）
+- 默认安装到 `%ProgramFiles%\Nimbus`
 - 开始菜单 & 桌面快捷方式
 - 开机自启注册表 (`HKCU\...\Run`, `-hidden` 参数)
 - MajorUpgrade 自动升级旧版本
