@@ -218,20 +218,22 @@ Item {
                     implicitHeight: 40
                     anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
 
+                    readonly property bool isSelected: providerCombo.currentIndex === index
+
                     contentItem: Text {
                         text: modelData
                         font: theme.bodyFont
-                        color: highlighted ? theme.accentWarm : theme.primaryText
+                        color: parent.isSelected ? theme.accentWarm : (parent.hovered ? theme.accentWarm : theme.primaryText)
                         verticalAlignment: Text.AlignVCenter
                         leftPadding: 8
                     }
 
                     background: Rectangle {
                         radius: theme.radiusSmall - 2
-                        color: highlighted ? theme.cardBgHover : "transparent"
+                        color: parent.isSelected ? theme.cardBgHover : (parent.hovered ? theme.cardBgHover : "transparent")
                     }
 
-                    highlighted: ListView.isCurrentItem || hovered
+                    highlighted: isSelected || hovered
                 }
             }
 
@@ -316,8 +318,6 @@ Item {
                         id: apiUrlScrollTimer
                         interval: 1
                         onTriggered: {
-                            if (apiUrlCombo.currentIndex < 0 && apiUrlCombo.editText === "" && providerCombo.currentIndex === 0)
-                                apiUrlCombo.currentIndex = 0
                             if (apiUrlListView.currentIndex >= 0) {
                                 apiUrlListView.positionViewAtIndex(apiUrlListView.currentIndex, ListView.Beginning)
                             }
@@ -325,9 +325,17 @@ Item {
                     }
 
                     onOpened: {
+                        var matched = -1
                         for (var i = 0; i < root.deepseekUrls.length; i++) {
-                            if (apiUrlCombo.editText === root.deepseekUrls[i])
-                                apiUrlCombo.currentIndex = i
+                            if (apiUrlCombo.editText === root.deepseekUrls[i]) {
+                                matched = i
+                                break
+                            }
+                        }
+                        if (matched >= 0) {
+                            apiUrlCombo.currentIndex = matched
+                        } else if (apiUrlCombo.editText === "" && providerCombo.currentIndex === 0) {
+                            apiUrlCombo.currentIndex = 0
                         }
                         apiUrlScrollTimer.start()
                     }
@@ -355,10 +363,12 @@ Item {
                     implicitHeight: 40
                     anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
 
+                    readonly property bool isSelected: apiUrlCombo.currentIndex === index
+
                     contentItem: Text {
                         text: modelData
                         font: theme.bodyFont
-                        color: highlighted ? theme.accentWarm : theme.primaryText
+                        color: parent.isSelected ? theme.accentWarm : (parent.hovered ? theme.accentWarm : theme.primaryText)
                         verticalAlignment: Text.AlignVCenter
                         elide: Text.ElideMiddle
                         leftPadding: 8
@@ -366,10 +376,10 @@ Item {
 
                     background: Rectangle {
                         radius: theme.radiusSmall - 2
-                        color: highlighted ? theme.cardBgHover : "transparent"
+                        color: parent.isSelected ? theme.cardBgHover : (parent.hovered ? theme.cardBgHover : "transparent")
                     }
 
-                    highlighted: ListView.isCurrentItem || hovered
+                    highlighted: isSelected || hovered
                 }
             }
 
@@ -485,8 +495,6 @@ Item {
                         id: modelScrollTimer
                         interval: 1
                         onTriggered: {
-                            if (modelCombo.currentIndex < 0 && modelCombo.editText === "" && providerCombo.currentIndex === 0)
-                                modelCombo.currentIndex = 0
                             if (modelListView.currentIndex >= 0) {
                                 modelListView.positionViewAtIndex(modelListView.currentIndex, ListView.Beginning)
                             }
@@ -494,9 +502,17 @@ Item {
                     }
 
                     onOpened: {
+                        var matched = -1
                         for (var i = 0; i < root.deepseekModels.length; i++) {
-                            if (modelCombo.editText === root.deepseekModels[i])
-                                modelCombo.currentIndex = i
+                            if (modelCombo.editText === root.deepseekModels[i]) {
+                                matched = i
+                                break
+                            }
+                        }
+                        if (matched >= 0) {
+                            modelCombo.currentIndex = matched
+                        } else if (modelCombo.editText === "" && providerCombo.currentIndex === 0) {
+                            modelCombo.currentIndex = 0
                         }
                         modelScrollTimer.start()
                     }
@@ -524,20 +540,22 @@ Item {
                     implicitHeight: 40
                     anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
 
+                    readonly property bool isSelected: modelCombo.currentIndex === index
+
                     contentItem: Text {
                         text: modelData
                         font: theme.bodyFont
-                        color: highlighted ? theme.accentWarm : theme.primaryText
+                        color: parent.isSelected ? theme.accentWarm : (parent.hovered ? theme.accentWarm : theme.primaryText)
                         verticalAlignment: Text.AlignVCenter
                         leftPadding: 8
                     }
 
                     background: Rectangle {
                         radius: theme.radiusSmall - 2
-                        color: highlighted ? theme.cardBgHover : "transparent"
+                        color: parent.isSelected ? theme.cardBgHover : (parent.hovered ? theme.cardBgHover : "transparent")
                     }
 
-                    highlighted: ListView.isCurrentItem || hovered
+                    highlighted: isSelected || hovered
                 }
             }
 
