@@ -102,57 +102,82 @@ void WeatherViewModel::onWeatherDataUpdated() {
 void WeatherViewModel::loadFromCache() {
     auto& cache = Data::WeatherCacheManager::getInstance();
 
-    // 先清空，如果缓存无数据则保持空状态
+    // 先清空
     m_todayWeather.clear();
     m_pastWeatherList.clear();
     m_futureWeatherList.clear();
     m_hourlyList.clear();
 
+    QDate today = QDate::currentDate();
+
     // 加载过去7天
     QList<Data::DailyWeather> pastList = cache.getPastSevenDays();
-    for (const auto& dw : pastList) {
-        QVariantMap map;
-        map["date"] = dw.date;
-        map["dayWeather"] = dw.dayWeather;
-        map["dayTemp"] = dw.dayTemp;
-        map["nightWeather"] = dw.nightWeather;
-        map["nightTemp"] = dw.nightTemp;
-        m_pastWeatherList.append(map);
+    if (pastList.isEmpty()) {
+        for (int i = 6; i >= 0; --i) {
+            QVariantMap map;
+            map["date"] = today.addDays(-i).toString("MM-dd");
+            map["dayWeather"] = "--";
+            map["dayTemp"] = 0;
+            map["nightWeather"] = "--";
+            map["nightTemp"] = 0;
+            m_pastWeatherList.append(map);
+        }
+    } else {
+        for (const auto& dw : pastList) {
+            QVariantMap map;
+            map["date"] = dw.date;
+            map["dayWeather"] = dw.dayWeather;
+            map["dayTemp"] = dw.dayTemp;
+            map["nightWeather"] = dw.nightWeather;
+            map["nightTemp"] = dw.nightTemp;
+            m_pastWeatherList.append(map);
+        }
     }
 
     // 加载未来7天及当日
-    m_futureWeatherList.clear();
     QList<Data::DailyWeather> futureList = cache.getFutureForecast();
-    for (int i = 0; i < futureList.size(); ++i) {
-        const auto& dw = futureList[i];
-        QVariantMap map;
-        map["date"] = dw.date;
-        map["dayWeather"] = dw.dayWeather;
-        map["dayTemp"] = dw.dayTemp;
-        map["dayHumidity"] = dw.dayHumidity;
-        map["nightWeather"] = dw.nightWeather;
-        map["nightTemp"] = dw.nightTemp;
-        map["nightHumidity"] = dw.nightHumidity;
-
-        m_futureWeatherList.append(map);
-
-        if (i == 0) {
-            m_todayWeather = map;
+    if (futureList.isEmpty()) {
+        for (int i = 0; i < 7; ++i) {
+            QVariantMap map;
+            map["date"] = today.addDays(i).toString("MM-dd");
+            map["dayWeather"] = "--";
+            map["dayTemp"] = 0;
+            map["dayHumidity"] = 0;
+            map["nightWeather"] = "--";
+            map["nightTemp"] = 0;
+            map["nightHumidity"] = 0;
+            m_futureWeatherList.append(map);
+            if (i == 0) m_todayWeather = map;
+        }
+    } else {
+        for (int i = 0; i < futureList.size(); ++i) {
+            const auto& dw = futureList[i];
+            QVariantMap map;
+            map["date"] = dw.date;
+            map["dayWeather"] = dw.dayWeather;
+            map["dayTemp"] = dw.dayTemp;
+            map["dayHumidity"] = dw.dayHumidity;
+            map["nightWeather"] = dw.nightWeather;
+            map["nightTemp"] = dw.nightTemp;
+            map["nightHumidity"] = dw.nightHumidity;
+            m_futureWeatherList.append(map);
+            if (i == 0) m_todayWeather = map;
         }
     }
 
     // 加载逐小时数据（只保留今天的数据）
-    QString todayStr = QDate::currentDate().toString("yyyy-MM-dd");
+    QString todayStr = today.toString("yyyy-MM-dd");
     QJsonArray hourlyData = cache.getHourlyData();
+    bool hasTodayHourly = false;
     for (const QJsonValue& val : hourlyData) {
         QJsonObject obj = val.toObject();
-        QString hourStr = obj["hour"].toString();       // "2026-05-15 14:00"
+        QString hourStr = obj["hour"].toString();
 
         if (!hourStr.startsWith(todayStr))
             continue;
 
+        hasTodayHourly = true;
         QJsonObject info = obj["info"].toObject();
-
         QString time = hourStr.length() >= 16 ? hourStr.mid(11, 5) : hourStr;
 
         QVariantMap map;
@@ -160,6 +185,16 @@ void WeatherViewModel::loadFromCache() {
         map["weather"] = info["weather"].toString("");
         map["temperature"] = info["temperature"].toInt(0);
         m_hourlyList.append(map);
+    }
+
+    if (!hasTodayHourly) {
+        for (int h = 0; h < 24; ++h) {
+            QVariantMap map;
+            map["time"] = QString("%1:00").arg(h, 2, 10, QChar('0'));
+            map["weather"] = "--";
+            map["temperature"] = 0;
+            m_hourlyList.append(map);
+        }
     }
 
     emit weatherDataChanged();
