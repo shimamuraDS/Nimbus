@@ -9,6 +9,25 @@ Item {
 
     Theme { id: theme }
 
+    // Preset data
+    property var deepseekModels: [
+        "deepseek-v4-flash",
+        "deepseek-v4-pro",
+        "deepseek-chat",
+        "deepseek-reasoner"
+    ]
+    property var deepseekUrls: [
+        "https://api.deepseek.com",
+        "https://api.deepseek.com/anthropic"
+    ]
+
+    // Determine initial provider based on stored API URL
+    property bool isDeepSeek: {
+        var storedUrl = typeof settingsViewModel !== "undefined" ? settingsViewModel.llmApiUrl : ""
+        return storedUrl === "" || storedUrl === "https://api.deepseek.com"
+    }
+    property string providerLabel: isDeepSeek ? "DeepSeek" : qsTr("自定义")
+
     ColumnLayout {
         id: llmLayout
         anchors.fill: parent
@@ -97,36 +116,229 @@ Item {
             visible: llmToggle.checked
             opacity: llmToggle.checked ? 1 : 0
 
-            // API URL
+            // ── Model Provider Selection ──
+            Text {
+                text: qsTr("模型选择")
+                font: theme.captionFont
+                color: theme.secondaryText
+            }
+            ComboBox {
+                id: providerCombo
+                Layout.fillWidth: true
+                implicitHeight: 34
+                model: ["DeepSeek", qsTr("自定义")]
+                currentIndex: root.isDeepSeek ? 0 : 1
+                textRole: "modelData"
+
+                onCurrentIndexChanged: {
+                    if (currentIndex === 0) {
+                        // DeepSeek: auto-fill defaults
+                        apiUrlCombo.currentIndex = 0
+                        modelCombo.currentIndex = 0
+                        commitApiUrl()
+                        commitModelName()
+                    } else {
+                        // Custom: clear fields, show format hint
+                        apiUrlCombo.editText = ""
+                        modelCombo.editText = ""
+                        commitApiUrl()
+                        commitModelName()
+                    }
+                }
+
+                contentItem: Text {
+                    text: providerCombo.currentText
+                    font: theme.bodyFont
+                    color: theme.primaryText
+                    verticalAlignment: Text.AlignVCenter
+                    leftPadding: 10
+                }
+
+                background: Rectangle {
+                    radius: theme.radiusSmall
+                    color: providerCombo.pressed ? theme.cardBgHover :
+                           (providerCombo.hovered ? theme.cardBgHover : theme.cardBg)
+                    border.color: providerCombo.activeFocus ? theme.accentWarm :
+                                  (providerCombo.hovered ? theme.cardBorderHover : theme.cardBorder)
+                    border.width: 1
+                }
+
+                indicator: Rectangle {
+                    x: providerCombo.width - 26
+                    y: (providerCombo.height - 20) / 2
+                    width: 20; height: 20; radius: 4
+                    color: "transparent"
+                    Text {
+                        anchors.centerIn: parent
+                        text: "▾"
+                        font.pixelSize: 14
+                        color: theme.accentWarm
+                    }
+                    rotation: providerCombo.popup.visible ? 180 : 0
+                    Behavior on rotation { NumberAnimation { duration: 150 } }
+                }
+
+                popup: Popup {
+                    y: providerCombo.height + 4
+                    width: providerCombo.width
+                    implicitHeight: contentItem.implicitHeight
+                    padding: 4
+
+                    contentItem: ListView {
+                        clip: true
+                        implicitHeight: Math.min(contentHeight, 120)
+                        model: providerCombo.popup.visible ? providerCombo.delegateModel : null
+                        currentIndex: providerCombo.currentIndex
+                        boundsBehavior: Flickable.StopAtBounds
+
+                        ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+                    }
+
+                    background: Rectangle {
+                        radius: theme.radiusSmall
+                        color: "#1e1e42"
+                        border.color: theme.cardBorderHover
+                        border.width: 1
+                    }
+                }
+
+                delegate: ItemDelegate {
+                    width: providerCombo.popup.width - 8
+                    implicitHeight: 35
+                    anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
+
+                    contentItem: Text {
+                        text: modelData
+                        font: theme.bodyFont
+                        color: highlighted ? theme.accentWarm : theme.primaryText
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    background: Rectangle {
+                        radius: theme.radiusSmall - 2
+                        color: highlighted ? theme.cardBgHover : "transparent"
+                    }
+
+                    highlighted: ListView.isCurrentItem || hovered
+                }
+            }
+
+            // ── API URL (editable ComboBox) ──
             Text {
                 text: qsTr("API 地址")
                 font: theme.captionFont
                 color: theme.secondaryText
             }
-            Rectangle {
+            ComboBox {
+                id: apiUrlCombo
                 Layout.fillWidth: true
                 implicitHeight: 34
-                radius: theme.radiusSmall
-                color: theme.cardBg
-                border.color: apiUrlInput.activeFocus ? theme.accentWarm : theme.cardBorder
-                border.width: 1
+                editable: true
+                model: providerCombo.currentIndex === 0 ? root.deepseekUrls : []
+                textRole: "modelData"
 
-                TextInput {
-                    id: apiUrlInput
-                    anchors.fill: parent
-                    anchors.margins: 8
-                    text: typeof settingsViewModel !== "undefined" ? settingsViewModel.llmApiUrl : ""
+                Component.onCompleted: {
+                    var stored = typeof settingsViewModel !== "undefined" ? settingsViewModel.llmApiUrl : ""
+                    if (stored !== "") {
+                        editText = stored
+                    } else if (providerCombo.currentIndex === 0) {
+                        currentIndex = 0
+                    }
+                }
+
+                onAccepted: commitApiUrl()
+                onCurrentIndexChanged: {
+                    if (currentIndex >= 0 && currentIndex < (providerCombo.currentIndex === 0 ? root.deepseekUrls.length : 0))
+                        commitApiUrl()
+                }
+
+                function commitApiUrl() {
+                    if (typeof settingsViewModel !== "undefined")
+                        settingsViewModel.llmApiUrl = editText
+                }
+
+                contentItem: TextInput {
+                    text: apiUrlCombo.editText
                     font: theme.bodyFont
                     color: theme.primaryText
-                    verticalAlignment: Text.AlignVCenter
-                    onEditingFinished: {
-                        if (typeof settingsViewModel !== "undefined")
-                            settingsViewModel.llmApiUrl = text
+                    verticalAlignment: TextInput.AlignVCenter
+                    leftPadding: 10
+                    readOnly: false
+                    clip: true
+                    onEditingFinished: apiUrlCombo.commitApiUrl()
+                }
+
+                background: Rectangle {
+                    radius: theme.radiusSmall
+                    color: apiUrlCombo.pressed ? theme.cardBgHover :
+                           (apiUrlCombo.hovered ? theme.cardBgHover : theme.cardBg)
+                    border.color: apiUrlCombo.activeFocus ? theme.accentWarm :
+                                  (apiUrlCombo.hovered ? theme.cardBorderHover : theme.cardBorder)
+                    border.width: 1
+                }
+
+                indicator: Rectangle {
+                    x: apiUrlCombo.width - 26
+                    y: (apiUrlCombo.height - 20) / 2
+                    width: 20; height: 20; radius: 4
+                    color: "transparent"
+                    visible: providerCombo.currentIndex === 0
+                    Text {
+                        anchors.centerIn: parent
+                        text: "▾"
+                        font.pixelSize: 14
+                        color: theme.accentWarm
                     }
+                    rotation: apiUrlCombo.popup.visible ? 180 : 0
+                    Behavior on rotation { NumberAnimation { duration: 150 } }
+                }
+
+                popup: Popup {
+                    y: apiUrlCombo.height + 4
+                    width: apiUrlCombo.width
+                    implicitHeight: contentItem.implicitHeight
+                    padding: 4
+
+                    contentItem: ListView {
+                        clip: true
+                        implicitHeight: Math.min(contentHeight, 100)
+                        model: apiUrlCombo.popup.visible ? apiUrlCombo.delegateModel : null
+                        currentIndex: apiUrlCombo.currentIndex
+                        boundsBehavior: Flickable.StopAtBounds
+                        ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+                    }
+
+                    background: Rectangle {
+                        radius: theme.radiusSmall
+                        color: "#1e1e42"
+                        border.color: theme.cardBorderHover
+                        border.width: 1
+                    }
+                }
+
+                delegate: ItemDelegate {
+                    width: apiUrlCombo.popup.width - 8
+                    implicitHeight: 35
+                    anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
+
+                    contentItem: Text {
+                        text: modelData
+                        font: theme.bodyFont
+                        color: highlighted ? theme.accentWarm : theme.primaryText
+                        verticalAlignment: Text.AlignVCenter
+                        elide: Text.ElideMiddle
+                    }
+
+                    background: Rectangle {
+                        radius: theme.radiusSmall - 2
+                        color: highlighted ? theme.cardBgHover : "transparent"
+                    }
+
+                    highlighted: ListView.isCurrentItem || hovered
                 }
             }
 
-            // API Key
+            // ── API Key ──
             Text {
                 text: qsTr("API Key")
                 font: theme.captionFont
@@ -157,32 +369,117 @@ Item {
                 }
             }
 
-            // Model name
+            // ── Model Name (editable ComboBox) ──
             Text {
                 text: qsTr("模型名称")
                 font: theme.captionFont
                 color: theme.secondaryText
             }
-            Rectangle {
+            ComboBox {
+                id: modelCombo
                 Layout.fillWidth: true
                 implicitHeight: 34
-                radius: theme.radiusSmall
-                color: theme.cardBg
-                border.color: modelInput.activeFocus ? theme.accentWarm : theme.cardBorder
-                border.width: 1
+                editable: true
+                model: providerCombo.currentIndex === 0 ? root.deepseekModels : []
+                textRole: "modelData"
 
-                TextInput {
-                    id: modelInput
-                    anchors.fill: parent
-                    anchors.margins: 8
-                    text: typeof settingsViewModel !== "undefined" ? settingsViewModel.llmModelName : "deepseek-v4-pro"
+                Component.onCompleted: {
+                    var stored = typeof settingsViewModel !== "undefined" ? settingsViewModel.llmModelName : ""
+                    if (stored !== "") {
+                        editText = stored
+                    } else if (providerCombo.currentIndex === 0) {
+                        currentIndex = 0
+                    }
+                }
+
+                onAccepted: commitModelName()
+                onCurrentIndexChanged: {
+                    if (currentIndex >= 0 && currentIndex < (providerCombo.currentIndex === 0 ? root.deepseekModels.length : 0))
+                        commitModelName()
+                }
+
+                function commitModelName() {
+                    if (typeof settingsViewModel !== "undefined")
+                        settingsViewModel.llmModelName = editText
+                }
+
+                contentItem: TextInput {
+                    text: modelCombo.editText
                     font: theme.bodyFont
                     color: theme.primaryText
-                    verticalAlignment: Text.AlignVCenter
-                    onEditingFinished: {
-                        if (typeof settingsViewModel !== "undefined")
-                            settingsViewModel.llmModelName = text
+                    verticalAlignment: TextInput.AlignVCenter
+                    leftPadding: 10
+                    readOnly: false
+                    clip: true
+                    onEditingFinished: modelCombo.commitModelName()
+                }
+
+                background: Rectangle {
+                    radius: theme.radiusSmall
+                    color: modelCombo.pressed ? theme.cardBgHover :
+                           (modelCombo.hovered ? theme.cardBgHover : theme.cardBg)
+                    border.color: modelCombo.activeFocus ? theme.accentWarm :
+                                  (modelCombo.hovered ? theme.cardBorderHover : theme.cardBorder)
+                    border.width: 1
+                }
+
+                indicator: Rectangle {
+                    x: modelCombo.width - 26
+                    y: (modelCombo.height - 20) / 2
+                    width: 20; height: 20; radius: 4
+                    color: "transparent"
+                    visible: providerCombo.currentIndex === 0
+                    Text {
+                        anchors.centerIn: parent
+                        text: "▾"
+                        font.pixelSize: 14
+                        color: theme.accentWarm
                     }
+                    rotation: modelCombo.popup.visible ? 180 : 0
+                    Behavior on rotation { NumberAnimation { duration: 150 } }
+                }
+
+                popup: Popup {
+                    y: modelCombo.height + 4
+                    width: modelCombo.width
+                    implicitHeight: contentItem.implicitHeight
+                    padding: 4
+
+                    contentItem: ListView {
+                        clip: true
+                        implicitHeight: Math.min(contentHeight, 220)
+                        model: modelCombo.popup.visible ? modelCombo.delegateModel : null
+                        currentIndex: modelCombo.currentIndex
+                        boundsBehavior: Flickable.StopAtBounds
+                        ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+                    }
+
+                    background: Rectangle {
+                        radius: theme.radiusSmall
+                        color: "#1e1e42"
+                        border.color: theme.cardBorderHover
+                        border.width: 1
+                    }
+                }
+
+                delegate: ItemDelegate {
+                    width: modelCombo.popup.width - 8
+                    implicitHeight: 35
+                    anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
+
+                    contentItem: Text {
+                        text: modelData
+                        font: theme.bodyFont
+                        color: highlighted ? theme.accentWarm : theme.primaryText
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    background: Rectangle {
+                        radius: theme.radiusSmall - 2
+                        color: highlighted ? theme.cardBgHover : "transparent"
+                    }
+
+                    highlighted: ListView.isCurrentItem || hovered
                 }
             }
 
