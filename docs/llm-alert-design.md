@@ -42,7 +42,7 @@ LLM/ApiKey    = ""           (XOR + SHA-256 混淆存储)
 LLM/ModelName = "deepseek-v4-pro"
 ```
 
-天气 API Key 也可在 UI 中修改：`API/WeatherKey`（优先于 `config.ini` 的 `API/DeveloperKey`）。
+天气 API Key 在 **设置 → API 设置** 中填写，存储于 QSettings `API/WeatherKey`，采用 DPAPI 加密。
 
 ### 新增模块 `src/llm/`
 

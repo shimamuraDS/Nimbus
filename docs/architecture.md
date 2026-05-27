@@ -26,7 +26,7 @@
 ```text
 Nimbus/
 ├── CMakeLists.txt                  # 核心构建脚本 (含 WITH_LLM 双版本开关)
-├── config.ini                      # 本地配置文件 (API Key)
+├── .gitignore                      # Git 忽略规则 (排除敏感配置文件)
 ├── README.md
 ├── LICENSE
 ├── CHANGELOG.md
@@ -59,7 +59,7 @@ Nimbus/
 │   │   ├── LLMClient.h/.cpp              # OpenAI 兼容 HTTP 客户端
 │   │   └── LLMAlertGenerator.h/.cpp      # 天气数据 → LLM Prompt → 提醒文本
 │   └── util/
-│       ├── Config.h/.cpp                 # QSettings + config.ini + DPAPI 安全存储
+│       ├── Config.h/.cpp                 # QSettings + DPAPI 安全存储
 │       ├── TimeUtil.h/.cpp               # 时间处理工具
 │       ├── WeatherCode.h/.cpp            # 天气代码 → 图标/描述映射
 │       └── ScreenHelper.h/.cpp           # 屏幕几何 + 任务栏检测
@@ -185,7 +185,7 @@ QML View Layer  →  ViewModel Layer  →  Service Layer  →  Network Layer
 | `Location/ManualCityName` | string | 手动选择的城市名 |
 | `Alerts/Times` | QStringList | 提醒时间点 ("HH:mm") |
 | `Alerts/AdvanceMinutes` | QStringList | 对应提前监测时长 |
-| `API/WeatherKey` | string | 天气 API Key (QSettings 优先于 config.ini) |
+| `API/WeatherKey` | string | 天气 API Key (DPAPI 加密存储，设置界面填入) |
 | `LLM/Enabled` | bool | AI 功能开关 [AI 版本] |
 | `LLM/ApiUrl` | string | LLM API 地址 [AI 版本] |
 | `LLM/ApiKey` | string | LLM API Key (DPAPI 加密存储) [AI 版本] |
@@ -224,7 +224,7 @@ struct DailyWeather {
 | `WeatherViewModel` | ViewModel | 天气数据 QML 绑定 |
 | `SettingsViewModel` | ViewModel | 设置数据绑定 + LLM 配置绑定 |
 | `TrayViewModel` | ViewModel | 系统托盘与窗口显隐 |
-| `Config` | Util | QSettings + config.ini + DPAPI 加密 |
+| `Config` | Util | QSettings 持久化 + DPAPI 加密 |
 
 ### QML 组件树
 
