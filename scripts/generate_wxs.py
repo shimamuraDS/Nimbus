@@ -97,12 +97,14 @@ def generate_wxs(deploy_dir: Path, output: Path, product_name: str, upgrade_code
 
     with open(output, 'w', encoding='utf-8') as f:
         f.write('<?xml version="1.0" encoding="utf-8"?>\n')
-        f.write('<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">\n')
+        f.write('<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"\n')
+        f.write('     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">\n')
         f.write(f'  <Package Name="{escape(product_name)}" Manufacturer="Nimbus"\n')
         f.write(f'           Version="1.0.0" UpgradeCode="{upgrade_code}"\n')
         f.write( '           Scope="perMachine" Language="2052">\n\n')
         f.write( '    <MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />\n\n')
         f.write( '    <MediaTemplate EmbedCab="yes" />\n\n')
+        f.write( '    <ui:WixUI Id="WixUI_InstallDir" />\n\n')
 
         # Directory tree
         f.write('    <StandardDirectory Id="ProgramFiles64Folder">\n')
