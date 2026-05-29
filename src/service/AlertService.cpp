@@ -91,8 +91,6 @@ void AlertService::checkDefaultAlert() {
 }
 
 void AlertService::checkAlerts() {
-    QString currentTime = Util::TimeUtil::getCurrentTimeHHmm();
-
     auto& config = Util::Config::getInstance();
     QStringList alertTimes = config.getAlertTimes();
 
@@ -103,10 +101,12 @@ void AlertService::checkAlerts() {
     }
 
     // Alert times configured: alert at specified times for ALL weather (including sunny)
-    if (currentTime == m_lastAlertTime) return;
+    QString currentDateTime = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm");
+    if (currentDateTime == m_lastAlertDateTime) return;
+    QString currentTime = currentDateTime.mid(11, 5);
     if (!alertTimes.contains(currentTime)) return;
 
-    m_lastAlertTime = currentTime;
+    m_lastAlertDateTime = currentDateTime;
 
     // Get the duration window for this alert time
     QStringList durationMinutes = config.getAlertAdvanceMinutes();
@@ -163,7 +163,7 @@ void AlertService::checkAlerts() {
     if (segments.isEmpty()) return;
 
     // Build fallback notification (neutral tone — covers sunny too)
-    auto buildFallback = [&]() -> QPair<QString, QString> {
+    auto buildFallback = [currentWeather, durationMin, segments]() -> QPair<QString, QString> {
         QString title;
         QString content;
         content = QString::fromUtf8("当前天气：") + currentWeather + "\n";
@@ -185,12 +185,12 @@ void AlertService::checkAlerts() {
                 content += seg.time + QString::fromUtf8("：") + seg.desc + "\n";
             }
         } else {
-            auto& seg = segments.first();
+            const auto& seg = segments.first();
             title = QString::fromUtf8("Nimbus：未来1小时天气");
             content += QString::fromUtf8("预计 ") + seg.time
                 + QString::fromUtf8(" 左右为") + seg.desc;
         }
-        return {title, content};
+        return QPair<QString, QString>{title, content};
     };
 
 #ifdef WITH_LLM

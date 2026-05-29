@@ -28,6 +28,7 @@ QString WeatherCode::getIconByWeather(const QString& weatherStr) {
 }
 
 bool WeatherCode::isSevereWeather(const QString& weatherStr) {
+    if (weatherStr.isEmpty()) return false;
     return !weatherStr.contains(QString::fromUtf8("晴"))
         && !weatherStr.contains(QString::fromUtf8("多云"));
 }

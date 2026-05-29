@@ -5,6 +5,7 @@
 #include <QJsonArray>
 #include <QTimer>
 #include <QDebug>
+#include <memory>
 
 namespace LLM {
 
@@ -51,24 +52,30 @@ void LLMClient::chat(const QString& apiUrl, const QString& apiKey,
     QByteArray bodyData = QJsonDocument(body).toJson(QJsonDocument::Compact);
     QNetworkReply* reply = m_manager->post(request, bodyData);
 
+    auto cb = std::make_shared<std::function<void(const QString&)>>(callback);
+    auto fired = std::make_shared<bool>(false);
+
     // 超时定时器
     QTimer* timer = new QTimer(reply);
     timer->setSingleShot(true);
-    connect(timer, &QTimer::timeout, reply, [reply, callback]() {
+    connect(timer, &QTimer::timeout, reply, [reply, cb, fired]() {
+        if (*fired) return;
+        *fired = true;
         qWarning() << "[LLMClient] Request timed out";
         reply->abort();
-        if (callback) callback(QString());
     });
     timer->start(timeoutMs);
 
-    connect(reply, &QNetworkReply::finished, this, [reply, timer, callback]() {
+    connect(reply, &QNetworkReply::finished, this, [reply, timer, cb, fired]() {
+        if (*fired) return;
+        *fired = true;
         timer->stop();
         timer->deleteLater();
         reply->deleteLater();
 
         if (reply->error() != QNetworkReply::NoError) {
             qWarning() << "[LLMClient] Network error:" << reply->errorString();
-            if (callback) callback(QString());
+            if (*cb) (*cb)(QString());
             return;
         }
 
@@ -77,7 +84,7 @@ void LLMClient::chat(const QString& apiUrl, const QString& apiKey,
         QJsonDocument doc = QJsonDocument::fromJson(responseData, &parseError);
         if (parseError.error != QJsonParseError::NoError) {
             qWarning() << "[LLMClient] JSON parse error:" << parseError.errorString();
-            if (callback) callback(QString());
+            if (*cb) (*cb)(QString());
             return;
         }
 
@@ -85,12 +92,12 @@ void LLMClient::chat(const QString& apiUrl, const QString& apiKey,
         QJsonArray choices = root["choices"].toArray();
         if (choices.isEmpty()) {
             qWarning() << "[LLMClient] No choices in response";
-            if (callback) callback(QString());
+            if (*cb) (*cb)(QString());
             return;
         }
 
         QString content = choices[0].toObject()["message"].toObject()["content"].toString().trimmed();
-        if (callback) callback(content);
+        if (*cb) (*cb)(content);
     });
 }
 
