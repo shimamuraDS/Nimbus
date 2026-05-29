@@ -23,9 +23,12 @@ set(TOOL_SRCS
 set(DATA_SRCS
     src/data/WeatherCacheManager.cpp
 )
+add_compile_definitions(NIMBUS_VERSION="1.0.1")
+
 set(NET_SRCS
     src/network/HttpClient.cpp
     src/network/TencentApiClient.cpp
+    src/network/GitHubReleaseClient.cpp
 )
 set(SERVICE_SRCS
     src/service/WeatherService.cpp

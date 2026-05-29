@@ -32,6 +32,7 @@ Popup {
 
     Overlay.modal: Rectangle {
         color: "#80000000"
+        radius: theme.radiusLarge
         Behavior on opacity { NumberAnimation { duration: 200 } }
     }
 

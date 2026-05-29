@@ -26,23 +26,42 @@ Rectangle {
             Layout.rightMargin: theme.spacingMedium
             Layout.preferredHeight: 48
 
-            Image {
-                source: "qrc:/resources/icons/github.png"
+            Item {
                 Layout.preferredWidth: 20
                 Layout.preferredHeight: 20
                 Layout.alignment: Qt.AlignVCenter
-                fillMode: Image.PreserveAspectFit
-                opacity: ghMouseArea.containsMouse ? 1.0 : 0.65
+
+                Image {
+                    anchors.fill: parent
+                    source: "qrc:/resources/icons/github.png"
+                    fillMode: Image.PreserveAspectFit
+                    opacity: ghMouseArea.containsMouse ? 1.0 : 0.65
+                    Behavior on opacity { NumberAnimation { duration: 150 } }
+                }
+
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.right: parent.right
+                    anchors.topMargin: -2
+                    anchors.rightMargin: -2
+                    width: 8; height: 8; radius: 4
+                    color: "#ff3b30"
+                    visible: typeof settingsViewModel !== "undefined" && settingsViewModel.updateAvailable
+                }
 
                 MouseArea {
                     id: ghMouseArea
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: Qt.openUrlExternally("https://github.com/shimamuraDS/Nimbus")
+                    onClicked: {
+                        if (typeof settingsViewModel !== "undefined" && settingsViewModel.updateAvailable) {
+                            settingsViewModel.openReleasePage()
+                        } else {
+                            Qt.openUrlExternally("https://github.com/shimamuraDS/Nimbus")
+                        }
+                    }
                 }
-
-                Behavior on opacity { NumberAnimation { duration: 150 } }
             }
 
             Item { width: 6; height: 1 }

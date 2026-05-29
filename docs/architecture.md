@@ -18,6 +18,7 @@
 3. **天气提醒** — 双重判定（官方预警 + 逐小时分析），定时/自动两种模式
 4. **隐式运行** — 系统托盘驻留，开机自启，窗口面积 ≤ 屏幕的 1/12
 5. **LLM 增强** — AI 版本通过大模型生成自然语言提醒（可选）
+6. **自动更新检测** — 启动时静默检查 GitHub Releases，有新版时工具栏 GitHub 图标显示红点提示
 
 ---
 
@@ -44,7 +45,8 @@ Nimbus/
 │   │   └── WeatherCacheManager.h/.cpp    # JSON 本地缓存 (hourly_data 滚动存储)
 │   ├── network/
 │   │   ├── HttpClient.h/.cpp             # QNetworkAccessManager 封装
-│   │   └── TencentApiClient.h/.cpp       # 腾讯 LBS API 调用
+│   │   ├── TencentApiClient.h/.cpp       # 腾讯 LBS API 调用
+│   │   └── GitHubReleaseClient.h/.cpp    # GitHub Releases API 版本检测
 │   ├── service/
 │   │   ├── WeatherService.h/.cpp         # 天气数据获取与处理
 │   │   ├── LocationService.h/.cpp        # IP 自动 + 手动城市定位
@@ -214,13 +216,14 @@ struct DailyWeather {
 |----|-----|------|
 | `HttpClient` | Network | QNetworkAccessManager 封装，异步 HTTP GET/POST |
 | `TencentApiClient` | Network | 继承 HttpClient，封装腾讯 LBS 三种天气 API + IP 定位 |
+| `GitHubReleaseClient` | Network | GitHub Releases API 调用，获取最新版本号与发布页 URL |
 | `WeatherService` | Service | 天气数据获取协调，触发缓存更新 |
 | `LocationService` | Service | 自动/手动定位逻辑，adcode 归一化 |
 | `AlertService` | Service | 60s 定时器，双重判定（官方预警 + 逐小时），触发通知 |
 | `NotificationManager` | Service | Windows 原生气泡通知 |
 | `WeatherCacheManager` | Data | JSON 缓存读写，过去 7 天聚合 |
 | `WeatherViewModel` | ViewModel | 天气数据 QML 绑定 |
-| `SettingsViewModel` | ViewModel | 设置数据绑定 + LLM 配置绑定 |
+| `SettingsViewModel` | ViewModel | 设置数据绑定 + LLM 配置绑定 + 更新检测 |
 | `TrayViewModel` | ViewModel | 系统托盘与窗口显隐 |
 | `Config` | Util | QSettings 持久化 + DPAPI 加密 |
 

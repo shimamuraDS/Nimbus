@@ -15,6 +15,8 @@ class SettingsViewModel : public QObject {
     Q_PROPERTY(QStringList alertAdvanceList READ alertAdvanceList NOTIFY alertTimeListChanged)
     Q_PROPERTY(bool isAutoStart READ isAutoStart NOTIFY settingsChanged)
     Q_PROPERTY(QString weatherApiKey READ weatherApiKey WRITE setWeatherApiKey NOTIFY settingsChanged)
+    Q_PROPERTY(bool updateAvailable READ isUpdateAvailable NOTIFY updateInfoChanged)
+    Q_PROPERTY(QString latestVersion READ latestVersion NOTIFY updateInfoChanged)
 
 public:
     explicit SettingsViewModel(Service::LocationService* locationService, QObject* parent = nullptr);
@@ -35,6 +37,11 @@ public:
     Q_INVOKABLE void updateAlertTime(const QString& oldTime, const QString& newTime);
     Q_INVOKABLE void setAdvanceMinutes(const QString& alertTime, int minutes);
     Q_INVOKABLE int getAdvanceMinutesFor(const QString& alertTime);
+    Q_INVOKABLE void checkForUpdates();
+    Q_INVOKABLE void openReleasePage();
+
+    bool isUpdateAvailable() const { return m_updateAvailable; }
+    QString latestVersion() const { return m_latestVersion; }
 
 #ifdef WITH_LLM
     Q_PROPERTY(bool llmEnabled READ isLLMEnabled WRITE setLLMEnabled NOTIFY llmSettingsChanged)
@@ -63,6 +70,7 @@ signals:
     void settingsChanged();
     void alertTimeListChanged();
     void weatherApiKeyChanged();
+    void updateInfoChanged();
 #ifdef WITH_LLM
     void llmSettingsChanged();
     void llmTestResultChanged();
@@ -70,6 +78,9 @@ signals:
 
 private:
     Service::LocationService* m_locationService;
+    bool m_updateAvailable = false;
+    QString m_latestVersion;
+    QString m_releaseUrl;
 #ifdef WITH_LLM
     QString m_llmTestResult;
 #endif

@@ -32,7 +32,7 @@ MVVM + 3-tier service architecture. See `docs/architecture.md` for full details.
 Key conventions:
 - `src/util/` — Config (QSettings + DPAPI), TimeUtil, WeatherCode, ScreenHelper
 - `src/data/` — WeatherCacheManager (JSON cache, hourly rolling storage)
-- `src/network/` — HttpClient → TencentApiClient (Tencent LBS API)
+- `src/network/` — HttpClient → TencentApiClient (Tencent LBS API), GitHubReleaseClient (update check)
 - `src/service/` — WeatherService, LocationService, AlertService, NotificationManager
 - `src/viewmodel/` — WeatherViewModel, SettingsViewModel, TrayViewModel
 - `src/llm/` — LLMClient, LLMAlertGenerator (only when WITH_LLM=ON)
@@ -47,6 +47,7 @@ Conditional compilation via `#ifdef WITH_LLM`:
 - AI (`WITH_LLM=ON`): LLM-generated natural language alerts via OpenAI-compatible API (DeepSeek)
 
 ## Notes
+- Auto-update check on startup (GitHub Releases API); red dot indicator on toolbar GitHub icon when new version available
 - API keys stored via Windows DPAPI encryption in QSettings; `config.ini` remains as fallback
 - LLM API Key stored via Windows DPAPI encryption (crypt32.dll loaded dynamically)
 - Window size ≤ 1/12 screen area, positioned bottom-right above taskbar

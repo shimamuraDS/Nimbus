@@ -5,6 +5,7 @@
 #include <QSystemTrayIcon>
 #include <QScreen>
 #include <QVariantMap>
+#include <QTimer>
 
 #include "service/WeatherService.h"
 #include "service/LocationService.h"
@@ -89,6 +90,8 @@ int main(int argc, char *argv[])
         &app, []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
     engine.load(url);
+
+    QTimer::singleShot(5000, settingsViewModel, &ViewModel::SettingsViewModel::checkForUpdates);
 
     return app.exec();
 }

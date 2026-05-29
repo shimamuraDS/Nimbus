@@ -1,5 +1,8 @@
 #include "SettingsViewModel.h"
 #include "../util/Config.h"
+#include "../network/GitHubReleaseClient.h"
+#include <QDesktopServices>
+#include <QUrl>
 #ifdef WITH_LLM
 #include "../llm/LLMClient.h"
 #endif
@@ -87,6 +90,59 @@ void SettingsViewModel::setAdvanceMinutes(const QString& alertTime, int minutes)
 
 int SettingsViewModel::getAdvanceMinutesFor(const QString& alertTime) {
     return Util::Config::getInstance().getAdvanceMinutesFor(alertTime);
+}
+
+static bool isNewerVersion(const QString& latest, const QString& current)
+{
+    auto parse = [](const QString& v) -> QList<int> {
+        QList<int> parts;
+        QString s = v.startsWith('v') ? v.mid(1) : v;
+        for (const QString& p : s.split('.')) {
+            bool ok = false;
+            int n = p.toInt(&ok);
+            parts.append(ok ? n : 0);
+        }
+        return parts;
+    };
+
+    QList<int> latestParts = parse(latest);
+    QList<int> currentParts = parse(current);
+
+    int maxLen = qMax(latestParts.size(), currentParts.size());
+    while (latestParts.size() < maxLen) latestParts.append(0);
+    while (currentParts.size() < maxLen) currentParts.append(0);
+
+    for (int i = 0; i < maxLen; ++i) {
+        if (latestParts[i] > currentParts[i]) return true;
+        if (latestParts[i] < currentParts[i]) return false;
+    }
+    return false;
+}
+
+void SettingsViewModel::checkForUpdates()
+{
+    auto* client = new Network::GitHubReleaseClient(this);
+    connect(client, &Network::GitHubReleaseClient::releaseInfoFetched,
+            this, [this, client](const QString& tagName, const QString& htmlUrl) {
+        client->deleteLater();
+        m_releaseUrl = htmlUrl;
+        m_latestVersion = tagName;
+        m_updateAvailable = isNewerVersion(tagName, NIMBUS_VERSION);
+        emit updateInfoChanged();
+    });
+    connect(client, &Network::GitHubReleaseClient::errorOccurred,
+            this, [this, client](const QString&) {
+        client->deleteLater();
+    });
+    client->checkLatestRelease(QStringLiteral("shimamuraDS"), QStringLiteral("Nimbus"));
+}
+
+void SettingsViewModel::openReleasePage()
+{
+    if (!m_releaseUrl.isEmpty())
+        QDesktopServices::openUrl(QUrl(m_releaseUrl));
+    else
+        QDesktopServices::openUrl(QUrl("https://github.com/shimamuraDS/Nimbus/releases"));
 }
 
 #ifdef WITH_LLM

@@ -101,6 +101,7 @@
 - **Tray Resident & Auto-Start**: System tray right-click menu, auto-start via Windows Registry `Run` key.
 - **Windows DPAPI Encryption**: API keys and LLM tokens encrypted with Windows DPAPI, bound to the current user — config files cannot be decrypted on other devices.
 - **WiX MSI Installer**: Custom install path, startup registration, and clean uninstall.
+- **Auto Update Check**: Silently checks GitHub Releases on startup; a red dot appears on the toolbar GitHub icon when a new version is available.
 
 ---
 
